@@ -403,13 +403,9 @@ Implement flexible tags.
 Example:
 
 # python
-
 # cybersecurity
-
 # ai
-
 # startup
-
 # editing
 
 Requirements:

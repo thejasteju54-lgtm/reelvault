@@ -1,73 +1,42 @@
-# Product Specification: ReelVault
+# PRODUCT SPECIFICATION: ReelVault
 
-## 1. Product Summary
-ReelVault is a purpose-built personal bookmarking and knowledge management platform for Instagram Reels. It replaces ad-hoc saving workflows (e.g. pasting links into WhatsApp personal chats, Notes app, Telegram, or Notion dumps) with an ultra-fast, structured, searchable repository.
+## 1. Executive Summary
+**ReelVault** is a minimalist personal platform designed as an actionable "second brain" specifically for Instagram Reels. It provides a frictionless capture, organization, and retrieval system that completely eliminates the fragmentation of pasting links into WhatsApp, notes apps, or Telegram.
 
----
+## 2. Core Value Proposition
+- **Lightning Fast Capture:** Save any Instagram Reel in under 2 seconds. Direct clipboard detection and auto-focus for batch saving.
+- **Strict Data Integrity:** Canonical URL normalization, Instagram shortcode extraction, and database-level duplicate prevention (`UNIQUE(user_id, instagram_shortcode)`).
+- **Personal Knowledge Management:** Add personal context (notes, custom categories, tags, watched status, importance/favorite).
+- **Instant Retrieval:** High-performance server-side multi-field search and composable filtering.
+- **Direct Instagram Handoff:** Frictionless "Open on Instagram" deep-link opening without scraping fragility or unauthorized video downloading.
 
-## 2. Core User Flows
+## 3. User Personas
+1. **The Lifelong Learner / Developer:** Saves tutorials, coding snippets, tech insights, and AI developments to review and execute later.
+2. **The Content Creator & Researcher:** Saves visual inspiration, hooks, and trend analyses organized by concept.
+3. **The Productivity / Fitness Enthusiast:** Collects workout regimens, recipes, and productivity tips to revisit during appropriate routines.
 
-### Flow 1: Quick Save (Primary Action)
-1. **Trigger:** User discovers a Reel on Instagram, taps "Share", and copies the link.
-2. **Input:** User switches to ReelVault and pastes the URL in the prominent Quick Save bar on the Dashboard or presses shortcut `N`.
-3. **Execution:**
-   - Client performs instant client-side format validation.
-   - API normalizes URL to canonical form `https://www.instagram.com/reel/<shortcode>/`.
-   - API checks if shortcode already exists for the user:
-     - **If new:** Saves reel, triggers non-blocking metadata enrichment, returns HTTP 201 Created.
-     - **If duplicate:** Returns HTTP 409 Conflict with link to existing Reel.
-   - Client displays subtle toast notification: `✓ Reel saved` with quick actions: `[View]`, `[Open Instagram]`.
+## 4. Key Workflows
+### 4.1 Quick Save Flow
+1. User copies Instagram Reel URL: `https://www.instagram.com/reel/C3_aBcDeF/?utm_source=ig_web_copy_link`.
+2. User opens ReelVault dashboard.
+3. User pastes URL into primary Quick Save input (or clipboard auto-populates).
+4. System validates URL pattern, sanitizes, normalizes, extracts shortcode `C3_aBcDeF`.
+5. System checks for duplicate in user vault:
+   - If new: creates record with default title, optional user-supplied tags/category, returns `201 Created`.
+   - If duplicate: returns `409 Conflict` with clear message: *"This Reel is already in your vault"* and provides direct link to the saved item.
+6. Input field clears and re-focuses immediately for rapid repeated saving. Subtle non-intrusive toast confirms save.
 
-### Flow 2: Exploration & Retrieval
-1. User filters by Category (e.g., *Engineering*, *Fitness*, *Design*, *Recipes*), Tags (e.g., `#react`, `#supabase`), or Status (*Unwatched*, *Watched*, *Favorites*, *Archived*).
-2. Debounced search input matches titles, creator handles, notes, or tags.
-3. User clicks any ReelCard to open the Details Drawer.
+### 4.2 Retrieval & Organization Flow
+1. User views dashboard: Summary counters (Total Saved, Favorites, Unwatched, Archived).
+2. Filter by status: All, Unwatched, Watched, Favorites, Archived.
+3. Filter by Category (e.g., Coding, AI, Productivity) and Tags (e.g., #python, #fullstack).
+4. Instant search across Title, Creator, Notes, and Tags.
+5. Quick inline toggles: Star as Favorite, Mark as Watched/Unwatched, Archive/Restore.
 
-### Flow 3: Consumption & Action
-1. User clicks **"Open on Instagram"** on the card or drawer.
-2. Instagram opens directly in a new browser tab/mobile app.
-3. User marks the reel as **Watched** (optimistic update) or adds private reflection notes.
+### 4.3 Action & Handoff
+1. Single click on "Open on Instagram" opens the canonical Instagram Reel in a new tab (desktop) or triggers Instagram app handoff (mobile).
 
----
-
-## 3. Screen Structure & Navigation
-
-### Routes
-| Route | Purpose | Key Elements |
-|---|---|---|
-| `/dashboard` | Command center | Greeting, Quick Save bar, Recent Reels, Quick Stats, Quick filters |
-| `/saved` | All active reels | Search bar, tag cloud, grid/list view, sort controls |
-| `/favorites` | Starred items | High-priority reels marked for recurring reference |
-| `/archive` | Inactive archive | Processed reels retained without cluttering active feed |
-| `/tags` | Taxonomy hub | Tag browser, reel count per tag, batch tag management |
-| `/settings` | Preferences | Theme (Light/Dark/System), data export (JSON/CSV), account info |
-
----
-
-## 4. Component Anatomy
-
-### ReelCard Component
-- **Media Header:** 9:16 aspect ratio thumbnail preview with graceful fallback gradient if unavailable.
-- **Top Badges:** Watch status indicator (Unwatched / Watched), Category pill.
-- **Body:**
-  - Title (truncated to 2 lines with tooltip).
-  - Creator handle (`@username` link or label).
-  - Tag chips (clickable to filter).
-  - Saved timestamp (`2 hours ago`).
-- **Footer Action Bar:**
-  - `Star` (Favorite toggle).
-  - `Check` (Watch toggle).
-  - `External Link` ("Open on Instagram" primary action).
-  - `Context Menu (...)`: Edit, Copy Clean URL, Archive, Delete.
-
----
-
-## 5. Keyboard Shortcuts
-| Shortcut | Action |
-|---|---|
-| `/` or `Ctrl + K` / `Cmd + K` | Focus Search Bar |
-| `N` | Open Quick Save Input |
-| `Escape` | Close Modal / Drawer / Clear Filter |
-| `F` | Toggle Favorite on selected card |
-| `W` | Toggle Watched on selected card |
-| `E` | Edit metadata |
+## 5. Non-Goals & Architectural Boundaries
+- **No Video Downloading:** ReelVault stores metadata and bookmarks; it is not a media downloader or pirate mirror.
+- **No Fragile Scraping:** Relies on resilient fallback metadata rather than fragile DOM scraping that breaks under Instagram anti-bot measures.
+- **No Bloat:** No social feeds, no algorithmic recommendations, no complex AI overhead. Pure focused utility.

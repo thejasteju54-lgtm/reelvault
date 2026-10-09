@@ -1,44 +1,24 @@
-# Security Architecture & Threat Model: ReelVault
+# SECURITY ARCHITECTURE & THREAT MODEL: ReelVault
 
-## 1. Security Principles
-ReelVault is built with a zero-trust model for all client inputs. Authentication identity is resolved strictly through cryptographically verified JWT tokens, and multi-tenant isolation is enforced at both the API layer and the database layer (via Row-Level Security).
+## 1. Threat Matrix & Countermeasures
 
----
+| Threat Vector | Severity | Attack Scenario | Implemented Countermeasure |
+|---|---|---|---|
+| **Insecure Direct Object Reference (IDOR)** | Critical | Attacker tries `GET /api/reels/<other_user_reel_id>` | 100% of SQL queries scope by `WHERE id = ? AND user_id = ?`. Queries never rely on `id` alone. |
+| **SQL Injection** | Critical | Attacker injects `' OR 1=1 --` into URL or search term | Prepared statements with parameterized query placeholders (`?`) exclusively used across all query layers. No string concatenation. |
+| **XSS & Protocol Hijack** | High | User saves `javascript:alert(1)` or `data:text/html,...` | Strict URL validation rejects anything not starting with `http://` or `https://` targeting Instagram hosts. React escapes HTML by default. |
+| **Duplicate Race Condition** | High | User or bot fires parallel requests saving same shortcode | Hard unique constraint `UNIQUE(user_id, instagram_shortcode)`. Transaction catch handles code `SQLITE_CONSTRAINT` / `23505` returning clean `409 Conflict`. |
+| **Mass Assignment** | High | Attacker sends `{ "user_id": "victim-id", "id": "admin" }` | Zod schemas whitelist allowed input fields explicitly. `user_id` is derived only from verified JWT payload. |
+| **Credential Attacks** | High | Weak passwords / brute force attacks | Strong password policy enforcement, secure salt + PBKDF2/bcrypt hashing, and API rate-limiting. |
+| **Denial of Service (DoS)** | Medium | Huge payload / body bomb or infinite query limits | Body size parser capped at `100kb`. Max pagination `limit` capped at 100. Global rate-limiting middleware (`express-rate-limit`). |
+| **Information Leakage** | Medium | Server crashes and leaks stack traces or SQL errors | Centralized error handler catches all unhandled exceptions, logs internal details server-side, and returns sanitized generic error envelopes. |
 
-## 2. Threat Modeling & Mitigation (STRIDE)
+## 2. HTTP Security Configuration
+- **Helmet Middleware:** Enables `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Strict-Transport-Security`, `Referrer-Policy: strict-origin-when-cross-origin`.
+- **CORS Policy:** Restricted to origin domain, rejecting wildcard credentials.
+- **Content Security Policy (CSP):** Disallows arbitrary inline script execution.
+- **External Redirection Guard:** All external links to Instagram render with `rel="noopener noreferrer"` and target `_blank`.
 
-| Threat | Description | Mitigation Strategy |
-|---|---|---|
-| **Spoofing** | Attacker impersonates another user to read/write reels | Supabase Auth issuing RS256/HS256 signed JWTs with short expiry. Server validates claims on every API route. |
-| **Tampering** | User modifies request payload to set `user_id` of victim | Server discards any client-supplied `user_id` and injects `auth.uid()` from the verified session context. |
-| **Repudiation** | User denies performing destructive deletions | Cascade tracking with optional audit logs for destructive actions. |
-| **Information Disclosure** | User A reads User B's private reels | PostgreSQL Row-Level Security (RLS) policies enforce `USING (auth.uid() = user_id)` at the database engine level. |
-| **Denial of Service** | Malicious script spams API with saves or requests | Rate limiting on API routes (60 req/min per IP/token) and payload size limit (max 100KB). |
-| **Elevation of Privilege** | User attempts to access admin endpoints | No administrative bypass exists on user content; service-role keys are kept strictly on the backend. |
-
----
-
-## 3. Specific Vulnerability Protections
-
-### A. SSRF (Server-Side Request Forgery) Defense
-When fetching optional metadata from Instagram links:
-1. Validate scheme is strictly `https:`.
-2. Host must strictly match `instagram.com` or `www.instagram.com`.
-3. Disallow redirects to private IP ranges (`127.0.0.1`, `10.0.0.0/8`, `192.168.0.0/16`, `169.254.169.254`).
-4. Apply a strict request timeout of 3000ms.
-
-### B. URL Injection & Parsing
-Instagram URLs are parsed using strict regular expressions to isolate the alphanumeric shortcode:
-- Valid format: `https://(www\.)?instagram\.com/(reel|reels|p)/([A-Za-z0-9_-]+)`
-- Strips any suspicious query parameters or javascript URI schemes (`javascript:` is strictly rejected).
-
-### C. Stored XSS Prevention
-- All user-entered titles, notes, and tag names are sanitized before storage and rendered safely using React's default text node encoding.
-- No `dangerouslySetInnerHTML` is used.
-
-### D. Multi-Tenant Isolation Verification Rule
-A mandatory test is defined:
-1. User A saves Reel `X`.
-2. User B attempts `GET /api/reels/:id_of_X` -> Must return `404 Not Found` (never `403` to prevent ID enumeration).
-3. User B attempts `PATCH /api/reels/:id_of_X` -> Must return `404 Not Found`.
-4. User B attempts `DELETE /api/reels/:id_of_X` -> Must return `404 Not Found`.
+## 3. Secret Management
+- `.env.example` documents all required environment variables with non-sensitive placeholders.
+- Secrets (`JWT_SECRET`, `SESSION_SECRET`) are read at runtime and rejected if missing or default in production environments.

@@ -1,49 +1,51 @@
-# Testing Strategy & Quality Assurance: ReelVault
+# TESTING STRATEGY & TEST PLAN: ReelVault
 
-## 1. Testing Philosophy
-ReelVault implements a test-first and continuous verification methodology. Features must be validated across unit, integration, database isolation, and end-to-end layers before being considered complete.
+## 1. Testing Hierarchy
 
----
+### 1.1 Unit Tests (`npm run test:unit`)
+- **URL Normalizer & Validator:**
+  - Standard Instagram Reel: `https://www.instagram.com/reel/C3_aBcDeF/` -> `C3_aBcDeF`.
+  - With query parameters & tracking: `https://www.instagram.com/reel/C3_aBcDeF/?utm_source=ig_web_copy_link&igsh=123` -> `C3_aBcDeF`.
+  - Mobile short URL / alternate formats: `https://instagram.com/reel/C3_aBcDeF/` and `/reels/C3_aBcDeF/`.
+  - Instagram post format: `https://www.instagram.com/p/C3_aBcDeF/`.
+  - Malicious inputs rejected:
+    - `javascript:alert('xss')`
+    - `data:text/html,...`
+    - `https://evil-phishing-instagram.com/reel/xyz`
+    - Empty, truncated, or non-Instagram URLs.
+- **Tag Normalizer:**
+  - Normalizes `' Python '` -> `'python'`.
+  - Normalizes `'#MachineLearning'` -> `'machinelearning'`.
+  - Rejects oversized tags, empty tags, or invalid symbols.
 
-## 2. Testing Pyramid
+### 1.2 Integration & API Tests (`npm run test:api`)
+- **Authentication Lifecycle:**
+  - Register new account with valid credentials (201).
+  - Reject duplicate email registration (409).
+  - Login with valid credentials and receive signed JWT (200).
+  - Reject invalid password (401).
+- **Core Reel Endpoints:**
+  - `POST /api/reels`: Saves new reel with tags and category (201).
+  - `POST /api/reels` Duplicate: Attempts saving same reel, asserts 409 Conflict.
+  - `GET /api/reels`: Asserts correct pagination structure and total count.
+  - `POST /api/reels/:id/favorite`: Toggles favorite state.
+  - `POST /api/reels/:id/watched`: Toggles watched state with timestamp.
+  - `POST /api/reels/:id/archive`: Archives reel, verifies absence from standard list.
+- **Security & IDOR Isolation Test:**
+  - Create User 1 and User 2.
+  - User 1 saves Reel X.
+  - User 2 attempts `GET /api/reels/:id` for Reel X -> must return 404/403.
+  - User 2 attempts `PATCH /api/reels/:id` for Reel X -> must return 404/403.
+  - User 2 attempts `DELETE /api/reels/:id` for Reel X -> must return 404/403.
+  - User 2 saving same Reel X shortcode -> succeeds (per-user vault isolation).
+- **Search & Filtering:**
+  - Query by keyword (`q=machinelearning`).
+  - Filter by category and watch status.
+  - Verify sort orders (`newest`, `oldest`, `alphabetical`).
 
-### Level 1: Unit Tests
-Focuses on pure functions, validators, and normalization algorithms:
-- **URL Normalizer:** Tests parsing of standard reel URLs, trailing slashes, share parameters (`utm_*`, `igsh`), mobile web URLs, and rejection of invalid URLs.
-- **Shortcode Extractor:** Tests extraction of shortcodes from `/reel/ABC/`, `/reels/ABC/`, and `/p/ABC/`.
-- **Payload Schema Validators:** Tests Zod validation schemas for required fields, string length constraints, and tag array sanitization.
-
-### Level 2: Database & Multi-Tenant Isolation Tests (Mandatory)
-- **Duplicate Prevention:** Inserting `(user_1, 'ABC123')` twice must trigger database unique constraint violation and be caught gracefully.
-- **Cross-Tenant Isolation:**
-  - Seed User A and User B.
-  - User A creates Reel `R1`.
-  - User B runs `SELECT * FROM reels WHERE id = 'R1'` -> returns 0 rows.
-  - User B executes `UPDATE reels SET is_favorite = true WHERE id = 'R1'` -> returns 0 rows modified.
-  - User B executes `DELETE FROM reels WHERE id = 'R1'` -> returns 0 rows modified.
-- **Cascade Deletion:** Deleting a Reel removes associated `reel_tags` rows automatically.
-
-### Level 3: API Integration Tests
-- `POST /api/reels` with valid URL returns `201 Created` with canonical URL.
-- `POST /api/reels` with existing URL returns `409 Conflict` with `existingId`.
-- `GET /api/reels` returns filtered results matching search query and tag filters.
-- `PATCH /api/reels/:id` updates title, notes, and tags cleanly.
-
-### Level 4: End-to-End (E2E) Workflow Test
-Simulate the full user journey:
-1. User logs in.
-2. User pastes Instagram Reel URL into Quick Save bar and presses Enter.
-3. System saves reel, displays success toast, and renders new card at top of feed.
-4. User toggles favorite star (optimistic update reflects immediately).
-5. User searches for keyword in title -> card remains visible.
-6. User clicks "Open on Instagram" -> opens valid Instagram URL in external tab.
-7. User archives the reel -> reel vanishes from `/saved` and appears in `/archive`.
-
----
-
-## 3. Ralph Loop & Continuous Self-Review Protocol
-At the conclusion of each phase:
-1. Run automated test suites.
-2. Verify TypeScript strict type check passes with 0 errors.
-3. Verify build output completes without warnings.
-4. Inspect network tab to ensure no duplicate network calls or unbounded queries occur.
+### 1.3 End-to-End Workflow & UI Verification
+- Browser subagent verification:
+  - User signup and login.
+  - Quick save submission and immediate list render.
+  - Keyboard navigation ('N', '/', 'Esc').
+  - Mobile viewport responsiveness (375px, 768px, 1280px).

@@ -1,66 +1,72 @@
-# System Architecture: ReelVault
+# SYSTEM ARCHITECTURE: ReelVault
 
-## 1. Architectural Overview
+## 1. High-Level Architecture Diagram
 
-ReelVault is designed as a minimalist, high-performance web platform that acts as a personal "second brain" for Instagram Reels. The architecture enforces separation of concerns, multi-tenant data isolation, strict input validation, and resilient offline/optimistic updates.
-
-### High-Level Topology
-
-```mermaid
-graph TD
-    Client["Client (React / TypeScript / Vite / Tailwind or Clean CSS)"]
-    Auth["Supabase Auth / Session Layer (JWT)"]
-    API["Backend / Edge API Layer"]
-    DB[("PostgreSQL Database (RLS Enforced)")]
-    IG["Instagram (External Resource)"]
-
-    Client -->|1. Authenticate| Auth
-    Client -->|2. REST Requests + Bearer JWT| API
-    API -->|3. Scoped Queries (user_id)| DB
-    Client -.->|Direct Canonical Redirection| IG
-    API -.->|Optional Meta Scraping (Resilient/Fallback)| IG
 ```
-
----
++-----------------------------------------------------------------------------------+
+|                                  CLIENT LAYER                                     |
+|                                                                                   |
+|  [ Modern React 19 + TypeScript + Vite SPA ]                                     |
+|  - Minimalist Linear/Raycast-Inspired UI (Custom Design Tokens, Vanilla CSS)       |
+|  - Keyboard Shortcut Engine ('N' save, '/' search, 'Esc' close, 'Cmd+K' command)  |
+|  - State Management: TanStack Query / React Query Pattern + Optimistic Updates    |
+|  - Responsive Mobile Navigation & Quick-Save Clipboard Listener                   |
++-----------------------------------------------------------------------------------+
+                                        |  HTTPS / JSON API
+                                        |  JWT / Session Bearer Auth
+                                        v
++-----------------------------------------------------------------------------------+
+|                             API & BACKEND LAYER                                   |
+|                                                                                   |
+|  [ Node.js + Express + TypeScript Core ]                                          |
+|  - Security Middleware: Helmet, CORS, Rate-Limiting, JSON parser limits           |
+|  - Request Validation: Zod Schemas for all Inputs & Params                        |
+|  - Instagram Engine: Regex Validator, URL Normalizer, Shortcode Extractor         |
+|  - Authentication & Auth Guard: User Scoping on 100% of queries                   |
+|  - Structured Logging & Centralized Error Handler                                 |
++-----------------------------------------------------------------------------------+
+                                        |  Prepared Statements / Transactions
+                                        v
++-----------------------------------------------------------------------------------+
+|                              PERSISTENCE LAYER                                    |
+|                                                                                   |
+|  [ Relational Database: SQLite (Native node:sqlite) / PostgreSQL / Supabase ]    |
+|  - Normalized Tables: users, reels, categories, tags, reel_tags                   |
+|  - Hard Unique Constraint: UNIQUE(user_id, instagram_shortcode)                   |
+|  - Composite Performance Indexes for filtering, sorting, and cursor pagination    |
+|  - Atomic Transactions for Reel + Tag association operations                      |
++-----------------------------------------------------------------------------------+
+```
 
 ## 2. Component Responsibilities & Boundaries
 
-### A. Client Responsibilities
-- **UI & Micro-interactions:** Rapid bookmarking input, optimistic toggles (favorites, watch status), responsive layout (desktop sidebar, mobile bottom nav).
-- **Client-Side Validation (UX Only):** Regex pre-validation on URL format to give instant typing feedback (never trusted for security).
-- **Navigation & Deep Linking:** Filter states, search term debounce, category switching.
-- **Instagram Launching:** Reliable external tab redirection to canonical Instagram URLs (`https://www.instagram.com/reel/<shortcode>/`).
-- **State & Cache Management:** Cache queries with immediate cache invalidation on mutations; optimistic rollbacks on failure.
+### 2.1 Client Responsibilities
+- URL syntax pre-checking (client-side instantaneous feedback).
+- Rapid keyboard event routing.
+- Responsive mobile & desktop layout rendering without shift (CLS = 0).
+- Safe external redirection to Instagram (`rel="noopener noreferrer"`).
+- Optimistic UI state updates for toggle actions (Favorite, Watched, Archive).
 
-### B. Server / API Responsibilities
-- **Authentication & Identity Scoping:** Validate JWT signature and claims on every incoming request. Extract `user_id` strictly from verified session claims.
-- **URL Normalization & Canonicalization:** Parse, strip tracking parameters (`utm_*`, `igsh`, `fbclid`), extract canonical `shortcode`.
-- **Duplicate Detection & Conflict Handling:** Intercept duplicates gracefully; return HTTP 409 Conflict with informative payload or restore if previously archived/trashed.
-- **Safe Metadata Enrichment (Non-blocking):** Best-effort oEmbed/OG-meta fetching; save operations must **never** fail if metadata scraping times out or is throttled.
-- **Data Scrubbing & Sanitization:** Sanitize notes and titles to prevent stored XSS; sanitize user tags.
-- **Error Sanitization:** Never leak database internals, stack traces, or credentials to the client.
+### 2.2 Server Responsibilities
+- **Zero Trust:** Re-validates every URL, payload, and parameter via Zod schemas.
+- **Shortcode & Canonicalization Engine:** Resolves tracking parameters, validates legitimate Instagram domains (`instagram.com`, `www.instagram.com`, `instagr.am`), extracts valid base64url/alphanumeric shortcodes.
+- **User Scoping:** Injects `user_id` strictly from authenticated session token. Never trusts client-supplied user identifiers.
+- **Transaction Safety:** Wraps reel creation and tag link creation inside ACID transactions.
 
-### C. Database Responsibilities (PostgreSQL)
-- **Data Integrity & Relational Rules:** Foreign keys, cascade deletions for tags/associations, non-nullable constraints.
-- **Row-Level Security (RLS):** Ensure policies enforce `user_id = auth.uid()` on every `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.
-- **Uniqueness Guarantee:** Enforce composite unique index `UNIQUE(user_id, instagram_shortcode)`.
-- **Query Optimization & Search:** Indexes on `(user_id, created_at DESC)`, `(user_id, is_favorite)`, `(user_id, is_watched)`, `(user_id, is_archived)`, and GIN trgm/FTS index on `(title, notes)`.
+### 2.3 Database Responsibilities
+- Enforces strict foreign keys (`ON DELETE CASCADE` where appropriate).
+- Prevents duplicates via `UNIQUE(user_id, instagram_shortcode)`.
+- Accelerates filtered query execution through composite indices (`user_id`, `is_archived`, `is_favorite`, `created_at`).
 
----
+## 3. URL Normalization Pipeline
+1. **Input:** `https://www.instagram.com/reel/C3_aBcDeF/?utm_source=ig_web_copy_link&igsh=XYZ`
+2. **Protocol & Host Verification:** Must match `http://` or `https://` and hostname `instagram.com` or `*.instagram.com`. Reject any `javascript:`, `data:`, or external URLs.
+3. **Path Pattern Matching:** Matches `/reel/:shortcode`, `/reels/:shortcode`, or `/p/:shortcode`.
+4. **Shortcode Extraction:** Extracts canonical shortcode (e.g., `C3_aBcDeF`).
+5. **Canonical URL Construction:** Standardizes to `https://www.instagram.com/reel/C3_aBcDeF/`.
+6. **Integrity Guard:** Uniqueness enforced on `(user_id, shortcode)`.
 
-## 3. Trust Boundaries
-
-```
-[ UNTRUSTED ZONE ] 
-  Browser / Client DOM / External HTTP inputs / Raw Instagram URLs
-───────────────────────────── Boundary 1: API Input Validation & Auth Guard ─────────────────────────────
-[ SEMI-TRUSTED ZONE ] 
-  API Request Context (Authenticated User ID verified from JWT)
-───────────────────────────── Boundary 2: Parametrized DB Calls & RLS ─────────────────────────────────────
-[ TRUSTED ZONE ] 
-  PostgreSQL Engine, RLS Policies, Service Secrets, Encrypted Backups
-```
-
-1. **Client is Untrusted:** Any field sent in the payload (including `user_id`, timestamps, URL formats) is validated server-side.
-2. **Metadata Fetching is Isolated:** External HTTP calls to Instagram are executed with strict timeouts (<= 3s) and cannot stall the database transaction.
-3. **Multi-tenant Isolation:** Even if an API handler has a bug, database RLS rules forbid accessing any row where `user_id != auth.uid()`.
+## 4. Scalability & Extensibility
+- Clean repository pattern decouples HTTP routes from persistence.
+- Easily swap between local zero-dependency SQLite and remote PostgreSQL/Supabase via environment variable `DATABASE_URL` / `SUPABASE_URL`.
+- Future-ready for Browser Extension / Share Sheet webhooks without changing core models.
