@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, AuthError } from '../services/auth.service.js';
+import { verifyToken, AuthError, ensureUserExists } from '../services/auth.service.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -25,6 +25,7 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
   try {
     const payload = verifyToken(token);
     req.user = payload;
+    ensureUserExists(payload.userId, payload.email);
     next();
   } catch (err: unknown) {
     const authErr = err as AuthError;

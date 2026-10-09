@@ -46,12 +46,15 @@ export function errorHandler(
   }
 
   // Handle generic uncaught errors
+  const errMessage = err instanceof Error ? err.message : 'An unexpected internal error occurred.';
   console.error('[Unhandled Server Error]:', err);
   res.status(500).json({
     success: false,
     error: {
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'An unexpected internal error occurred. Please try again later.'
+      message: process.env.VERCEL || process.env.NODE_ENV !== 'production'
+        ? errMessage
+        : 'An unexpected internal error occurred. Please try again later.'
     }
   });
 }

@@ -248,8 +248,8 @@ export function getReels(userId: string, filters: ReelQueryFilters = {}): {
 
   // Get total matching count
   const countStmt = db.prepare(`SELECT COUNT(*) as count FROM reels r WHERE ${whereClause}`);
-  const countRow = countStmt.get(...params) as unknown as { count: number };
-  const total = countRow.count;
+  const countRow = countStmt.get(...params) as unknown as { count: number } | undefined;
+  const total = countRow?.count ?? 0;
 
   // Get paginated rows
   const queryStmt = db.prepare(`
@@ -425,12 +425,18 @@ export function getVaultStats(userId: string): VaultStats {
     WHERE user_id = ?
   `);
 
-  const summary = summaryStmt.get(userId) as {
+  const summary = (summaryStmt.get(userId) as {
     total: number;
     watched: number | null;
     unwatched: number | null;
     favorites: number | null;
     archived: number | null;
+  } | undefined) || {
+    total: 0,
+    watched: 0,
+    unwatched: 0,
+    favorites: 0,
+    archived: 0
   };
 
   const topTagsStmt = db.prepare(`

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { registerUser, loginUser, getUserById } from '../services/auth.service.js';
+import { registerUser, loginUser, getUserById, ensureUserExists } from '../services/auth.service.js';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 
@@ -45,7 +45,11 @@ router.post('/login', validateBody(LoginSchema), (req: Request, res: Response, n
 
 router.get('/me', requireAuth, (req: AuthenticatedRequest, res: Response, next) => {
   try {
-    const user = getUserById(req.user!.userId);
+    let user = getUserById(req.user!.userId);
+    if (!user) {
+      ensureUserExists(req.user!.userId, req.user!.email);
+      user = getUserById(req.user!.userId);
+    }
     if (!user) {
       res.status(404).json({
         success: false,

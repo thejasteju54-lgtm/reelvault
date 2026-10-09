@@ -123,3 +123,28 @@ export function getUserById(userId: string): User | null {
     updatedAt: row.updated_at
   };
 }
+
+export function ensureUserExists(userId: string, email: string): void {
+  const db = getDb();
+  try {
+    const existing = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+    if (!existing) {
+      const cleanDisplayName = email.split('@')[0];
+      db.prepare(`
+        INSERT OR IGNORE INTO users (id, email, password_hash, display_name)
+        VALUES (?, ?, 'serverless_session_hash', ?)
+      `).run(userId, email, cleanDisplayName);
+
+      // Seed starter categories for this user
+      const insertCat = db.prepare(`
+        INSERT OR IGNORE INTO categories (id, user_id, name, slug, color)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      for (const cat of DEFAULT_USER_CATEGORIES) {
+        insertCat.run(generateUuid(), userId, cat.name, cat.slug, cat.color);
+      }
+    }
+  } catch (err) {
+    console.warn('ensureUserExists warning:', err);
+  }
+}
