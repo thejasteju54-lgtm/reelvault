@@ -24,31 +24,34 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        padding: '4rem 1.5rem',
-        background: 'var(--bg-card)',
-        borderRadius: 'var(--radius-xl)',
-        border: '1px dashed var(--border-subtle)',
-        marginTop: '1.5rem'
+        padding: 'var(--space-7) var(--space-4)',
+        backgroundColor: 'var(--bg-surface)',
+        borderRadius: 'var(--radius)',
+        border: '1px dashed var(--border-muted)',
+        marginTop: 'var(--space-5)'
       }}
     >
       <div
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 'var(--radius-full)',
-          background: 'var(--color-accent-subtle)',
-          color: 'var(--color-accent)',
+          width: 48,
+          height: 48,
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'var(--bg-surface-active)',
+          color: 'var(--color-primary)',
+          border: '1px solid var(--border-muted)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '1.25rem'
+          marginBottom: 'var(--space-3)'
         }}
       >
-        <Icon size={26} />
+        <Icon size={22} />
       </div>
 
-      <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>{title}</h3>
-      <p style={{ maxWidth: '380px', fontSize: '0.875rem', marginBottom: actionLabel ? '1.5rem' : '0' }}>
+      <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
+        {title}
+      </h3>
+      <p style={{ maxWidth: '52ch', fontSize: 'var(--font-size-sm)', marginBottom: actionLabel ? 'var(--space-4)' : '0' }}>
         {description}
       </p>
 

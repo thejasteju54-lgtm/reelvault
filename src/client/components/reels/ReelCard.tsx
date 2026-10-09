@@ -40,7 +40,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(reel.canonicalUrl);
-      showToast('✓ Copied Instagram link to clipboard', 'info');
+      showToast('Copied link to clipboard', 'info');
     } catch {
       showToast('Failed to copy link', 'error');
     }
@@ -79,48 +79,53 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem',
+              gap: 'var(--space-2)',
               color: 'var(--text-muted)'
             }}
           >
             <div
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 'var(--radius-full)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                width: 40,
+                height: 40,
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'var(--bg-surface-active)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#e1306c'
+                color: 'var(--color-primary)'
               }}
             >
-              <InstagramIcon size={26} />
+              <InstagramIcon size={22} />
             </div>
-            <span style={{ fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.04em' }}>
-              REEL • {reel.instagramShortcode}
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 'var(--font-size-xs)',
+                fontWeight: 500
+              }}
+            >
+              {reel.instagramShortcode}
             </span>
           </div>
         )}
 
-        {/* Top Floating Status Badges */}
+        {/* Top Floating Badges: Solid Flat Surfaces, No Blur */}
         <div
           style={{
             position: 'absolute',
-            top: '0.625rem',
-            left: '0.625rem',
+            top: 'var(--space-2)',
+            left: 'var(--space-2)',
             display: 'flex',
-            gap: '0.35rem'
+            gap: 'var(--space-1)'
           }}
         >
           {reel.categoryName && (
             <span
               className="badge"
               style={{
-                backgroundColor: reel.categoryColor ? `${reel.categoryColor}22` : undefined,
-                color: reel.categoryColor || undefined,
-                borderColor: reel.categoryColor ? `${reel.categoryColor}44` : undefined,
-                backdropFilter: 'blur(6px)'
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-muted)'
               }}
             >
               {reel.categoryName}
@@ -131,10 +136,9 @@ export const ReelCard: React.FC<ReelCardProps> = ({
             <span
               className="badge"
               style={{
-                background: 'var(--color-success-bg)',
+                backgroundColor: 'var(--bg-surface)',
                 color: 'var(--color-success)',
-                borderColor: 'rgba(16, 185, 129, 0.25)',
-                backdropFilter: 'blur(6px)'
+                borderColor: 'var(--border-muted)'
               }}
             >
               <CheckCircle size={10} />
@@ -143,7 +147,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
           )}
         </div>
 
-        {/* Favorite Star Top Right */}
+        {/* Favorite Star Top Right: Solid Dark Surface, No Blur */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -152,17 +156,16 @@ export const ReelCard: React.FC<ReelCardProps> = ({
           className="btn-icon"
           style={{
             position: 'absolute',
-            top: '0.5rem',
-            right: '0.5rem',
-            background: 'rgba(0, 0, 0, 0.45)',
-            backdropFilter: 'blur(6px)',
-            color: reel.isFavorite ? '#fbbf24' : '#ffffff',
-            padding: '6px'
+            top: 'var(--space-2)',
+            right: 'var(--space-2)',
+            backgroundColor: 'rgba(19, 19, 18, 0.85)',
+            color: reel.isFavorite ? 'var(--color-accent)' : '#ffffff',
+            padding: 'var(--space-1)'
           }}
           aria-label={reel.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           title={reel.isFavorite ? 'Favorited' : 'Favorite'}
         >
-          <Star size={16} fill={reel.isFavorite ? '#fbbf24' : 'none'} />
+          <Star size={15} fill={reel.isFavorite ? 'var(--color-accent)' : 'none'} />
         </button>
       </div>
 
@@ -170,10 +173,10 @@ export const ReelCard: React.FC<ReelCardProps> = ({
       <div className="reel-card-content">
         <h3
           style={{
-            fontSize: '0.9375rem',
+            fontSize: 'var(--font-size-sm)',
             fontWeight: 600,
-            lineHeight: 1.4,
-            marginBottom: '0.25rem',
+            lineHeight: varLineHeightSnug(),
+            marginBottom: 'var(--space-1)',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -185,7 +188,14 @@ export const ReelCard: React.FC<ReelCardProps> = ({
         </h3>
 
         {reel.creatorUsername && (
-          <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--text-muted)',
+              marginBottom: 'var(--space-2)'
+            }}
+          >
             @{reel.creatorUsername}
           </p>
         )}
@@ -194,9 +204,9 @@ export const ReelCard: React.FC<ReelCardProps> = ({
         {reel.notes && (
           <p
             style={{
-              fontSize: '0.8125rem',
+              fontSize: 'var(--font-size-xs)',
               color: 'var(--text-secondary)',
-              marginBottom: '0.625rem',
+              marginBottom: 'var(--space-2)',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -213,8 +223,8 @@ export const ReelCard: React.FC<ReelCardProps> = ({
             style={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: '0.35rem',
-              marginBottom: '0.75rem'
+              gap: 'var(--space-1)',
+              marginBottom: 'var(--space-3)'
             }}
           >
             {reel.tags.map((tag) => (
@@ -236,18 +246,24 @@ export const ReelCard: React.FC<ReelCardProps> = ({
         <div
           style={{
             marginTop: 'auto',
-            paddingTop: '0.75rem',
+            paddingTop: 'var(--space-2)',
             borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--text-muted)'
+            }}
+          >
             {formatRelativeTime(reel.createdAt)}
           </span>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', position: 'relative' }}>
             {/* Watched Toggle */}
             <button
               onClick={(e) => {
@@ -262,7 +278,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               aria-label={reel.isWatched ? 'Mark unwatched' : 'Mark watched'}
               title={reel.isWatched ? 'Watched' : 'Mark watched'}
             >
-              <CheckCircle size={16} />
+              <CheckCircle size={15} />
             </button>
 
             {/* Open on Instagram Action */}
@@ -273,16 +289,16 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               onClick={(e) => e.stopPropagation()}
               className="btn btn-secondary"
               style={{
-                fontSize: '0.75rem',
-                padding: '0.35rem 0.65rem',
+                fontSize: 'var(--font-size-xs)',
+                padding: '2px var(--space-2)',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.35rem'
+                gap: 'var(--space-1)'
               }}
               title="Open canonical Instagram Reel in new tab"
             >
               <span>Open</span>
-              <ExternalLink size={12} />
+              <ExternalLink size={11} />
             </a>
 
             {/* More Menu Dropdown Toggle */}
@@ -295,7 +311,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               style={{ padding: '4px' }}
               aria-label="More actions"
             >
-              <MoreVertical size={16} />
+              <MoreVertical size={15} />
             </button>
 
             {/* Dropdown Menu */}
@@ -313,14 +329,14 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     position: 'absolute',
                     bottom: '100%',
                     right: 0,
-                    marginBottom: '0.35rem',
-                    background: 'var(--bg-dropdown)',
+                    marginBottom: 'var(--space-1)',
+                    backgroundColor: 'var(--bg-surface)',
                     border: '1px solid var(--border-muted)',
-                    borderRadius: 'var(--radius-md)',
+                    borderRadius: 'var(--radius)',
                     boxShadow: 'var(--shadow-dropdown)',
                     zIndex: 70,
                     minWidth: '150px',
-                    padding: '0.35rem',
+                    padding: 'var(--space-1)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '2px'
@@ -336,12 +352,12 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     style={{
                       justifyContent: 'flex-start',
                       width: '100%',
-                      padding: '0.4rem 0.6rem',
-                      fontSize: '0.8125rem',
-                      gap: '0.5rem'
+                      padding: 'var(--space-1) var(--space-2)',
+                      fontSize: 'var(--font-size-xs)',
+                      gap: 'var(--space-2)'
                     }}
                   >
-                    <Edit2 size={14} />
+                    <Edit2 size={13} />
                     <span>Edit Details</span>
                   </button>
 
@@ -351,12 +367,12 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     style={{
                       justifyContent: 'flex-start',
                       width: '100%',
-                      padding: '0.4rem 0.6rem',
-                      fontSize: '0.8125rem',
-                      gap: '0.5rem'
+                      padding: 'var(--space-1) var(--space-2)',
+                      fontSize: 'var(--font-size-xs)',
+                      gap: 'var(--space-2)'
                     }}
                   >
-                    <Copy size={14} />
+                    <Copy size={13} />
                     <span>Copy Link</span>
                   </button>
 
@@ -370,16 +386,16 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     style={{
                       justifyContent: 'flex-start',
                       width: '100%',
-                      padding: '0.4rem 0.6rem',
-                      fontSize: '0.8125rem',
-                      gap: '0.5rem'
+                      padding: 'var(--space-1) var(--space-2)',
+                      fontSize: 'var(--font-size-xs)',
+                      gap: 'var(--space-2)'
                     }}
                   >
-                    {reel.isArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+                    {reel.isArchived ? <ArchiveRestore size={13} /> : <Archive size={13} />}
                     <span>{reel.isArchived ? 'Restore' : 'Archive'}</span>
                   </button>
 
-                  <div style={{ height: 1, background: 'var(--border-subtle)', margin: '2px 0' }} />
+                  <div style={{ height: 1, backgroundColor: 'var(--border-subtle)', margin: '2px 0' }} />
 
                   <button
                     onClick={(e) => {
@@ -391,14 +407,14 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     style={{
                       justifyContent: 'flex-start',
                       width: '100%',
-                      padding: '0.4rem 0.6rem',
-                      fontSize: '0.8125rem',
-                      gap: '0.5rem',
+                      padding: 'var(--space-1) var(--space-2)',
+                      fontSize: 'var(--font-size-xs)',
+                      gap: 'var(--space-2)',
                       color: 'var(--color-danger)'
                     }}
                   >
-                    <Trash2 size={14} />
-                    <span>Delete</span>
+                    <Trash2 size={13} />
+                    <span>Delete Record</span>
                   </button>
                 </div>
               </>
@@ -409,3 +425,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
     </article>
   );
 };
+
+function varLineHeightSnug() {
+  return 1.35;
+}

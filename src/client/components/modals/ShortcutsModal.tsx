@@ -16,37 +16,38 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     { key: 'G then S', description: 'Navigate to Saved Reels' },
     { key: 'G then F', description: 'Navigate to Favorites' },
     { key: 'G then A', description: 'Navigate to Archive' },
-    { key: 'G then T', description: 'Navigate to Tags' },
+    { key: 'G then T', description: 'Navigate to Index Tags' },
     { key: '?', description: 'Toggle this keyboard shortcuts cheatsheet' }
   ];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="460px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div
             style={{
-              width: 38,
-              height: 38,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--color-accent-subtle)',
-              color: 'var(--color-accent)',
+              width: 36,
+              height: 36,
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'var(--bg-surface-active)',
+              color: 'var(--color-primary)',
+              border: '1px solid var(--border-muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <Keyboard size={20} />
+            <Keyboard size={18} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Keyboard Shortcuts</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Speed up your workflow with power-user keystrokes
+            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600 }}>Keyboard Shortcuts</h3>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+              Keyboard navigation for high-speed cataloging
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
           {shortcuts.map((item) => (
             <div
               key={item.key}
@@ -54,37 +55,23 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '0.5rem 0.75rem',
-                background: 'var(--bg-app)',
-                borderRadius: 'var(--radius-md)',
+                padding: 'var(--space-2) var(--space-3)',
+                backgroundColor: 'var(--bg-app)',
+                borderRadius: 'var(--radius)',
                 border: '1px solid var(--border-subtle)'
               }}
             >
-              <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>
                 {item.description}
               </span>
-              <kbd
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  padding: '0.2rem 0.5rem',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-muted)',
-                  borderRadius: 'var(--radius-sm)',
-                  boxShadow: 'var(--shadow-sm)',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                {item.key}
-              </kbd>
+              <kbd>{item.key}</kbd>
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
           <button onClick={onClose} className="btn btn-secondary">
-            Got It
+            Close
           </button>
         </div>
       </div>

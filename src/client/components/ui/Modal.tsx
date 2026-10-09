@@ -52,24 +52,24 @@ export const Modal: React.FC<ModalProps> = ({
         {title && (
           <div
             style={{
-              padding: '1.25rem 1.5rem',
+              padding: 'var(--space-4) var(--space-5)',
               borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between'
             }}
           >
-            <h3 style={{ fontSize: '1.125rem' }}>{title}</h3>
+            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600 }}>{title}</h3>
             <button
               onClick={onClose}
               className="btn-icon"
               aria-label="Close dialog"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
         )}
-        <div style={{ padding: '1.5rem' }}>{children}</div>
+        <div style={{ padding: 'var(--space-5)' }}>{children}</div>
       </div>
     </div>
   );

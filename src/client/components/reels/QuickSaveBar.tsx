@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BookmarkPlus, Plus, Clipboard, Tag, ChevronDown, ChevronUp, AlertCircle, ExternalLink } from 'lucide-react';
+import { BookmarkPlus, Plus, Clipboard, ChevronDown, ChevronUp, AlertCircle, ArrowUpRight } from 'lucide-react';
 import { Category, Reel } from '../../types/index.js';
 import { useToast } from '../ui/Toast.js';
 
@@ -36,7 +36,6 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
   // 'N' key global shortcut to focus Save input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if already inside an input or textarea
       const target = e.target as HTMLElement;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName)) return;
 
@@ -68,7 +67,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
       if (text) {
         setUrl(text);
         setDuplicateReelId(null);
-        showToast('Pasted from clipboard', 'info', 1500);
+        showToast('Pasted URL from clipboard', 'info', 1500);
       }
     } catch {
       showToast('Clipboard access denied. Please paste manually.', 'error');
@@ -91,8 +90,8 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
         tags: tags.length > 0 ? tags : undefined
       });
 
-      showToast('✓ Reel saved to your vault', 'success');
-      // Reset form fields
+      showToast('Reel cataloged in vault', 'success');
+      // Reset form
       setUrl('');
       setTitle('');
       setNotes('');
@@ -106,9 +105,9 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
       const apiErr = err as Error & { code?: string; existingReelId?: string };
       if (apiErr.code === 'DUPLICATE_REEL') {
         setDuplicateReelId(apiErr.existingReelId || null);
-        showToast('✕ This Reel is already saved in your vault.', 'error');
+        showToast('This Reel is already cataloged in your vault.', 'error');
       } else {
-        showToast(apiErr.message || 'Unable to save Reel. Check the URL.', 'error');
+        showToast(apiErr.message || 'Unable to save Reel. Verify the URL format.', 'error');
       }
     } finally {
       setIsSubmitting(false);
@@ -118,17 +117,16 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
+        backgroundColor: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-xl)',
-        padding: '1.25rem',
-        boxShadow: 'var(--shadow-md)',
+        borderRadius: 'var(--radius)',
+        padding: 'var(--space-4)',
         position: 'relative'
       }}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         {/* Main URL input row */}
-        <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             <input
               ref={inputRef}
@@ -138,11 +136,11 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
                 setUrl(e.target.value);
                 setDuplicateReelId(null);
               }}
-              placeholder="Paste Instagram Reel URL... (Press 'N' to focus)"
+              placeholder="Paste Instagram Reel URL (Press 'N' to focus)"
               style={{
                 width: '100%',
-                padding: '0.75rem 2.5rem 0.75rem 1rem',
-                fontSize: '0.9375rem'
+                padding: 'var(--space-3) 2.5rem var(--space-3) var(--space-3)',
+                fontSize: 'var(--font-size-sm)'
               }}
               disabled={isSubmitting}
             />
@@ -154,8 +152,8 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
               className="btn-icon"
               style={{
                 position: 'absolute',
-                right: '0.5rem',
-                padding: '0.35rem',
+                right: 'var(--space-2)',
+                padding: 'var(--space-1)',
                 color: 'var(--text-muted)'
               }}
               title="Paste from clipboard"
@@ -169,48 +167,46 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             type="submit"
             disabled={isSubmitting || !url.trim()}
             className="btn btn-primary"
-            style={{ padding: '0.75rem 1.25rem', minWidth: '120px' }}
+            style={{ padding: 'var(--space-3) var(--space-4)', minWidth: '124px' }}
           >
             <BookmarkPlus size={16} />
-            <span>{isSubmitting ? 'Saving...' : 'Save Reel'}</span>
+            <span>{isSubmitting ? 'Cataloging...' : 'Save Reel'}</span>
           </button>
         </div>
 
-        {/* Duplicate Reel notification banner */}
+        {/* Duplicate Reel notification ledger row */}
         {duplicateReelId && (
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '0.625rem 0.875rem',
-              background: 'var(--color-warning-bg)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
+              padding: 'var(--space-2) var(--space-3)',
+              backgroundColor: 'var(--bg-surface-active)',
+              borderRadius: 'var(--radius)',
+              border: '1px solid var(--border-muted)',
               color: 'var(--text-primary)',
-              fontSize: '0.8125rem'
+              fontSize: 'var(--font-size-xs)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} color="var(--color-warning)" />
-              <span>This Reel is already in your vault.</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <AlertCircle size={15} color="var(--color-primary)" />
+              <span>This Reel is already cataloged in your vault.</span>
             </div>
             <button
               type="button"
               onClick={() => onSelectReel(duplicateReelId)}
-              className="btn btn-ghost"
+              className="btn btn-secondary"
               style={{
-                padding: '0.2rem 0.5rem',
-                fontSize: '0.75rem',
-                color: 'var(--color-warning)',
-                fontWeight: 600,
+                padding: '2px var(--space-2)',
+                fontSize: 'var(--font-size-xs)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem'
+                gap: 'var(--space-1)'
               }}
             >
-              <span>View Saved Reel</span>
-              <ExternalLink size={12} />
+              <span>Inspect Saved Reel</span>
+              <ArrowUpRight size={12} />
             </button>
           </div>
         )}
@@ -224,13 +220,13 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: '0.75rem',
+              gap: 'var(--space-1)',
+              fontSize: 'var(--font-size-xs)',
               color: 'var(--text-muted)',
-              padding: '0.25rem 0.5rem'
+              padding: 'var(--space-1) var(--space-2)'
             }}
           >
-            <span>{isExpanded ? 'Hide optional details' : 'Add details (title, tags, category, notes)'}</span>
+            <span>{isExpanded ? 'Hide archive fields' : 'Add metadata (title, category, tags, notes)'}</span>
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </div>
@@ -241,26 +237,26 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '0.75rem',
-              paddingTop: '0.5rem',
+              gap: 'var(--space-3)',
+              paddingTop: 'var(--space-3)',
               borderTop: '1px solid var(--border-subtle)',
-              animation: 'fadeIn 150ms ease'
+              animation: 'modalFadeIn var(--transition-fast)'
             }}
           >
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Custom title (optional)"
-              style={{ padding: '0.5rem 0.75rem' }}
+              placeholder="Descriptive title"
+              style={{ padding: 'var(--space-2) var(--space-3)' }}
             />
 
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              style={{ padding: '0.5rem 0.75rem' }}
+              style={{ padding: 'var(--space-2) var(--space-3)' }}
             >
-              <option value="">Select category (optional)</option>
+              <option value="">Assign category</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -268,7 +264,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
               ))}
             </select>
 
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
               <input
                 type="text"
                 value={tagInput}
@@ -279,14 +275,14 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
                     handleAddTag();
                   }
                 }}
-                placeholder="Add tags (press Enter)..."
-                style={{ flex: 1, padding: '0.5rem 0.75rem' }}
+                placeholder="Add index tag (press Enter)"
+                style={{ flex: 1, padding: 'var(--space-2) var(--space-3)' }}
               />
               <button
                 type="button"
                 onClick={handleAddTag}
                 className="btn btn-secondary"
-                style={{ padding: '0.5rem 0.75rem' }}
+                style={{ padding: 'var(--space-2) var(--space-3)' }}
               >
                 <Plus size={14} />
                 <span>Add Tag</span>
@@ -294,13 +290,13 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             </div>
 
             {tags.length > 0 && (
-              <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+              <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
                 {tags.map((tag) => (
                   <span
                     key={tag}
                     className="badge badge-tag"
                     onClick={() => handleRemoveTag(tag)}
-                    title="Click to remove"
+                    title="Click to remove tag"
                   >
                     #{tag} ×
                   </span>
@@ -311,9 +307,9 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Personal notes & takeaways (optional)..."
+              placeholder="Curator notes, key techniques, timestamp cues..."
               rows={2}
-              style={{ gridColumn: '1 / -1', padding: '0.5rem 0.75rem', resize: 'vertical' }}
+              style={{ gridColumn: '1 / -1', padding: 'var(--space-2) var(--space-3)', resize: 'vertical' }}
             />
           </div>
         )}

@@ -17,7 +17,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setIsExporting(true);
     try {
       await api.export.download(format);
-      showToast(`✓ Exported vault as ${format.toUpperCase()}`, 'success');
+      showToast(`Exported vault as ${format.toUpperCase()}`, 'success');
       onClose();
     } catch (err: unknown) {
       const e = err as Error;
@@ -29,31 +29,32 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="440px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div
             style={{
-              width: 38,
-              height: 38,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--color-accent-subtle)',
-              color: 'var(--color-accent)',
+              width: 36,
+              height: 36,
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'var(--bg-surface-active)',
+              color: 'var(--color-primary)',
+              border: '1px solid var(--border-muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <Download size={20} />
+            <Download size={18} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Export Vault Data</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Download a complete copy of your saved reels & metadata
+            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600 }}>Export Vault Data</h3>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+              Download a complete archive copy of saved reels and metadata
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           <button
             onClick={() => handleExport('json')}
             disabled={isExporting}
@@ -62,16 +63,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
-              gap: '1rem',
-              padding: '1rem',
+              gap: 'var(--space-3)',
+              padding: 'var(--space-3)',
               textAlign: 'left'
             }}
           >
-            <FileJson size={28} color="var(--color-accent)" />
+            <FileJson size={24} color="var(--color-primary)" />
             <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>JSON Export</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Complete structured export including notes, tags, categories, and timestamps.
+              <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>JSON Archive</div>
+              <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                Structured JSON file containing notes, tags, categories, and ISO timestamps.
               </div>
             </div>
           </button>
@@ -84,22 +85,22 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
-              gap: '1rem',
-              padding: '1rem',
+              gap: 'var(--space-3)',
+              padding: 'var(--space-3)',
               textAlign: 'left'
             }}
           >
-            <FileSpreadsheet size={28} color="var(--color-success)" />
+            <FileSpreadsheet size={24} color="var(--color-success)" />
             <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>CSV Spreadsheet</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Tabular format ideal for Excel, Google Sheets, or Notion database import.
+              <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>CSV Table</div>
+              <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                Tabular format compatible with Excel, Google Sheets, or database import tools.
               </div>
             </div>
           </button>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
           <button onClick={onClose} className="btn btn-ghost" disabled={isExporting}>
             Cancel
           </button>

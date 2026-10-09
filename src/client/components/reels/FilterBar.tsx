@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Search, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { Category, ReelQueryFilters } from '../../types/index.js';
 
 interface FilterBarProps {
@@ -39,22 +39,22 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.75rem',
-        marginTop: '1.5rem',
-        padding: '0.875rem 1.25rem',
-        background: 'var(--bg-card)',
+        gap: 'var(--space-3)',
+        marginTop: 'var(--space-5)',
+        padding: 'var(--space-3) var(--space-4)',
+        backgroundColor: 'var(--bg-surface)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)'
+        borderRadius: 'var(--radius)'
       }}
     >
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Search Input */}
         <div style={{ position: 'relative', flex: '1 1 240px', minWidth: '200px' }}>
           <Search
-            size={16}
+            size={15}
             style={{
               position: 'absolute',
-              left: '0.75rem',
+              left: 'var(--space-3)',
               top: '50%',
               transform: 'translateY(-50%)',
               color: 'var(--text-muted)'
@@ -65,11 +65,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             type="text"
             value={filters.q || ''}
             onChange={(e) => onChangeFilters({ q: e.target.value })}
-            placeholder="Search titles, notes, tags... (Press '/' to search)"
+            placeholder="Search records by title, notes, tags (Press '/')"
             style={{
               width: '100%',
-              padding: '0.55rem 2rem 0.55rem 2.25rem',
-              fontSize: '0.875rem'
+              padding: 'var(--space-2) 2rem var(--space-2) 2.25rem',
+              fontSize: 'var(--font-size-xs)'
             }}
           />
           {filters.q && (
@@ -78,20 +78,28 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               className="btn-icon"
               style={{
                 position: 'absolute',
-                right: '0.4rem',
+                right: 'var(--space-2)',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 padding: '2px'
               }}
               aria-label="Clear search"
             >
-              <X size={14} />
+              <X size={13} />
             </button>
           )}
         </div>
 
-        {/* Watch Status Selector */}
-        <div style={{ display: 'flex', background: 'var(--bg-app)', borderRadius: 'var(--radius-md)', padding: '2px' }}>
+        {/* Watch Status Segmented Filter */}
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: 'var(--bg-app)',
+            borderRadius: 'var(--radius)',
+            padding: '2px',
+            border: '1px solid var(--border-subtle)'
+          }}
+        >
           {(['all', 'unwatched', 'watched'] as const).map((st) => {
             const isSelected = (filters.status || 'all') === st;
             return (
@@ -99,14 +107,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 key={st}
                 onClick={() => onChangeFilters({ status: st })}
                 style={{
-                  padding: '0.4rem 0.75rem',
-                  fontSize: '0.75rem',
+                  padding: 'var(--space-1) var(--space-3)',
+                  fontSize: 'var(--font-size-xs)',
                   fontWeight: isSelected ? 600 : 500,
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: 'var(--radius)',
                   color: isSelected ? 'var(--text-primary)' : 'var(--text-muted)',
-                  background: isSelected ? 'var(--bg-card)' : 'transparent',
-                  boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                  textTransform: 'capitalize'
+                  backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
+                  border: isSelected ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                  textTransform: 'capitalize',
+                  transition: 'all var(--transition-fast)'
                 }}
               >
                 {st}
@@ -116,13 +125,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
 
         {/* Category Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <select
             value={filters.categoryId || ''}
             onChange={(e) => onChangeFilters({ categoryId: e.target.value || undefined })}
             style={{
-              padding: '0.45rem 0.75rem',
-              fontSize: '0.8125rem',
+              padding: 'var(--space-2) var(--space-3)',
+              fontSize: 'var(--font-size-xs)',
               minWidth: '130px'
             }}
           >
@@ -136,7 +145,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
 
         {/* Sort Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <select
             value={filters.sort || 'newest'}
             onChange={(e) =>
@@ -145,33 +154,33 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               })
             }
             style={{
-              padding: '0.45rem 0.75rem',
-              fontSize: '0.8125rem'
+              padding: 'var(--space-2) var(--space-3)',
+              fontSize: 'var(--font-size-xs)'
             }}
           >
-            <option value="newest">Newest Saved</option>
-            <option value="oldest">Oldest Saved</option>
+            <option value="newest">Cataloged: Newest</option>
+            <option value="oldest">Cataloged: Oldest</option>
             <option value="updated">Recently Updated</option>
-            <option value="alphabetical">Alphabetical</option>
+            <option value="alphabetical">Title: A to Z</option>
           </select>
         </div>
       </div>
 
-      {/* Active Filter Chips & Result Count */}
+      {/* Active Filter Ledger & Entry Count */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: '0.75rem',
+          fontSize: 'var(--font-size-xs)',
           color: 'var(--text-muted)',
           flexWrap: 'wrap',
-          gap: '0.5rem'
+          gap: 'var(--space-2)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span>
-            {totalResults} {totalResults === 1 ? 'Reel' : 'Reels'} found
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'var(--font-mono)' }}>
+            {totalResults} {totalResults === 1 ? 'record' : 'records'}
           </span>
 
           {filters.tag && (
@@ -200,9 +209,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <span
               className="badge"
               onClick={() => onChangeFilters({ favorite: undefined })}
-              style={{ cursor: 'pointer', color: '#fbbf24' }}
+              style={{ cursor: 'pointer', color: 'var(--color-accent)' }}
             >
-              ★ Favorites Only <X size={10} style={{ marginLeft: 3 }} />
+              Favorites Only <X size={10} style={{ marginLeft: 3 }} />
             </span>
           )}
         </div>
@@ -218,7 +227,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               })
             }
             className="btn-ghost"
-            style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', color: 'var(--color-accent)' }}
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              padding: '2px var(--space-2)',
+              color: 'var(--color-primary)'
+            }}
           >
             Reset Filters
           </button>

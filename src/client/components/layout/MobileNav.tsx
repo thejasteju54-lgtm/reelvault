@@ -23,8 +23,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentTab, onSelectTab })
         bottom: 0,
         left: 0,
         right: 0,
-        height: '60px',
-        background: 'var(--bg-card)',
+        height: '56px',
+        backgroundColor: 'var(--bg-surface)',
         borderTop: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
@@ -46,11 +46,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentTab, onSelectTab })
               flexDirection: 'column',
               alignItems: 'center',
               gap: '2px',
-              color: isActive ? 'var(--color-accent)' : 'var(--text-muted)',
-              background: 'transparent',
-              fontSize: '0.6875rem',
+              color: isActive ? 'var(--color-primary)' : 'var(--text-muted)',
+              backgroundColor: 'transparent',
+              fontSize: 'var(--font-size-xs)',
               fontWeight: isActive ? 600 : 500,
-              padding: '6px'
+              padding: 'var(--space-1) var(--space-2)'
             }}
           >
             <Icon size={18} />

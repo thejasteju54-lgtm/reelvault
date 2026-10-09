@@ -27,15 +27,16 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onCancel} maxWidth="420px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           {isDanger && (
             <div
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-danger-bg)',
+                width: 34,
+                height: 34,
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'var(--bg-surface-active)',
+                border: '1px solid var(--border-muted)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -43,20 +44,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 flexShrink: 0
               }}
             >
-              <AlertTriangle size={20} />
+              <AlertTriangle size={18} />
             </div>
           )}
-          <h3 style={{ fontSize: '1.125rem' }}>{title}</h3>
+          <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600 }}>{title}</h3>
         </div>
 
-        <p style={{ fontSize: '0.875rem', lineHeight: 1.6 }}>{message}</p>
+        <p style={{ fontSize: 'var(--font-size-sm)', lineHeight: 'var(--line-height-normal)' }}>{message}</p>
 
         <div
           style={{
             display: 'flex',
             justifyContent: 'flex-end',
-            gap: '0.75rem',
-            marginTop: '1rem'
+            gap: 'var(--space-2)',
+            marginTop: 'var(--space-3)'
           }}
         >
           <button

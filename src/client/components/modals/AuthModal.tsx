@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Mail, Lock, User as UserIcon, AlertCircle } from 'lucide-react';
+import { Layers, Mail, Lock, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Modal } from '../ui/Modal.js';
 import { api } from '../../services/api.js';
 import { User } from '../../types/index.js';
@@ -29,7 +29,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
     try {
       if (mode === 'login') {
         const res = await api.auth.login(email, password);
-        showToast('✓ Successfully signed in', 'success');
+        showToast('Signed into vault', 'success');
         onSuccess({
           id: res.user.id,
           email: res.user.email,
@@ -39,7 +39,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         });
       } else {
         const res = await api.auth.register(email, password, displayName || undefined);
-        showToast('✓ Account created successfully', 'success');
+        showToast('Account registered successfully', 'success');
         onSuccess({
           id: res.user.id,
           email: res.user.email,
@@ -63,7 +63,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
     setIsLoading(true);
 
     try {
-      // Try login first, or register demo user if not existing
       let res;
       try {
         res = await api.auth.login('demo@reelvault.app', 'demo1234');
@@ -71,7 +70,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         res = await api.auth.register('demo@reelvault.app', 'demo1234', 'Demo User');
       }
 
-      showToast('✓ Logged in as Demo User', 'success');
+      showToast('Entered as Demo Curator', 'success');
       onSuccess({
         id: res.user.id,
         email: res.user.email,
@@ -81,7 +80,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
       });
     } catch (err: unknown) {
       const e = err as Error;
-      setErrorMsg(e.message || 'Failed demo login');
+      setErrorMsg(e.message || 'Failed demo authentication');
     } finally {
       setIsLoading(false);
     }
@@ -89,31 +88,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="420px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        {/* Modal Brand Title */}
-        <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        {/* Modal Brand Title: Solid Terracotta Emblem */}
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-2)' }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              margin: '0 auto 0.75rem auto',
-              borderRadius: 'var(--radius-md)',
-              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+              width: 40,
+              height: 40,
+              margin: '0 auto var(--space-3) auto',
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'var(--color-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#ffffff'
             }}
           >
-            <Sparkles size={24} />
+            <Layers size={22} />
           </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-            {mode === 'login' ? 'Sign in to ReelVault' : 'Create your Vault'}
+          <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: 600 }}>
+            {mode === 'login' ? 'Sign in to ReelVault' : 'Register Vault Account'}
           </h2>
-          <p style={{ fontSize: '0.8125rem', marginTop: '0.25rem' }}>
+          <p style={{ fontSize: 'var(--font-size-xs)', marginTop: 'var(--space-1)', color: 'var(--text-secondary)' }}>
             {mode === 'login'
-              ? 'Access your personal saved reels and knowledge base'
-              : 'Save and organize Reels across all your devices'}
+              ? 'Access your saved video reference library'
+              : 'Index and organize reels across all workstations'}
           </p>
         </div>
 
@@ -121,9 +120,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         <div
           style={{
             display: 'flex',
-            background: 'var(--bg-app)',
-            borderRadius: 'var(--radius-md)',
-            padding: '3px'
+            backgroundColor: 'var(--bg-app)',
+            borderRadius: 'var(--radius)',
+            padding: '2px',
+            border: '1px solid var(--border-subtle)'
           }}
         >
           <button
@@ -134,13 +134,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
             }}
             style={{
               flex: 1,
-              padding: '0.45rem',
-              fontSize: '0.8125rem',
+              padding: 'var(--space-1) var(--space-2)',
+              fontSize: 'var(--font-size-xs)',
               fontWeight: mode === 'login' ? 600 : 500,
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--radius)',
               color: mode === 'login' ? 'var(--text-primary)' : 'var(--text-muted)',
-              background: mode === 'login' ? 'var(--bg-card)' : 'transparent',
-              boxShadow: mode === 'login' ? 'var(--shadow-sm)' : 'none'
+              backgroundColor: mode === 'login' ? 'var(--bg-surface)' : 'transparent',
+              border: mode === 'login' ? '1px solid var(--border-subtle)' : '1px solid transparent',
+              transition: 'all var(--transition-fast)'
             }}
           >
             Sign In
@@ -153,13 +154,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
             }}
             style={{
               flex: 1,
-              padding: '0.45rem',
-              fontSize: '0.8125rem',
+              padding: 'var(--space-1) var(--space-2)',
+              fontSize: 'var(--font-size-xs)',
               fontWeight: mode === 'register' ? 600 : 500,
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--radius)',
               color: mode === 'register' ? 'var(--text-primary)' : 'var(--text-muted)',
-              background: mode === 'register' ? 'var(--bg-card)' : 'transparent',
-              boxShadow: mode === 'register' ? 'var(--shadow-sm)' : 'none'
+              backgroundColor: mode === 'register' ? 'var(--bg-surface)' : 'transparent',
+              border: mode === 'register' ? '1px solid var(--border-subtle)' : '1px solid transparent',
+              transition: 'all var(--transition-fast)'
             }}
           >
             Register
@@ -169,51 +171,52 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         {errorMsg && (
           <div
             style={{
-              padding: '0.625rem 0.875rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--color-danger-bg)',
+              padding: 'var(--space-2) var(--space-3)',
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'var(--bg-surface-active)',
+              border: '1px solid var(--color-danger)',
               color: 'var(--color-danger)',
-              fontSize: '0.8125rem',
+              fontSize: 'var(--font-size-xs)',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: 'var(--space-2)'
             }}
           >
-            <AlertCircle size={16} />
+            <AlertCircle size={15} />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           {mode === 'register' && (
             <div>
-              <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+              <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
                 Display Name (Optional)
               </label>
               <div style={{ position: 'relative' }}>
                 <UserIcon
-                  size={16}
-                  style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
+                  size={15}
+                  style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
                 />
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="e.g. Alex"
-                  style={{ width: '100%', padding: '0.625rem 0.75rem 0.625rem 2.25rem' }}
+                  style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem' }}
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+            <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
               Email Address
             </label>
             <div style={{ position: 'relative' }}>
               <Mail
-                size={16}
-                style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
+                size={15}
+                style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
               />
               <input
                 type="email"
@@ -221,19 +224,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                style={{ width: '100%', padding: '0.625rem 0.75rem 0.625rem 2.25rem' }}
+                style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem' }}
               />
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+            <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
               Password
             </label>
             <div style={{ position: 'relative' }}>
               <Lock
-                size={16}
-                style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
+                size={15}
+                style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
               />
               <input
                 type="password"
@@ -242,7 +245,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 6 characters"
-                style={{ width: '100%', padding: '0.625rem 0.75rem 0.625rem 2.25rem' }}
+                style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem' }}
               />
             </div>
           </div>
@@ -251,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
             type="submit"
             disabled={isLoading}
             className="btn btn-primary"
-            style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
+            style={{ width: '100%', padding: 'var(--space-3)', marginTop: 'var(--space-1)' }}
           >
             {isLoading ? 'Processing...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
@@ -261,9 +264,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
             onClick={handleDemoLogin}
             disabled={isLoading}
             className="btn btn-secondary"
-            style={{ width: '100%', padding: '0.625rem', fontSize: '0.8125rem' }}
+            style={{ width: '100%', padding: 'var(--space-2)', fontSize: 'var(--font-size-xs)' }}
           >
-            Instant 1-Click Demo Login
+            Enter as Demo Curator
           </button>
         </form>
       </div>

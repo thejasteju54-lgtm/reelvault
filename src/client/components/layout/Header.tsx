@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Sun, Moon, Keyboard } from 'lucide-react';
+import { Sun, Moon, Keyboard } from 'lucide-react';
 import { User } from '../../types/index.js';
 
 interface HeaderProps {
@@ -24,26 +24,43 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="app-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
         <div>
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+          <span
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--text-muted)',
+              fontWeight: 500,
+              display: 'block',
+              letterSpacing: '0.01em'
+            }}
+          >
             {getGreeting()}{currentUser?.displayName ? `, ${currentUser.displayName}` : ''}
           </span>
-          <h1 style={{ fontSize: '1.25rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Your Reel Vault
+          <h1
+            style={{
+              fontSize: 'var(--font-size-md)',
+              lineHeight: 'var(--line-height-tight)',
+              fontWeight: 600
+            }}
+          >
+            ReelVault Ledger
           </h1>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
         <button
           onClick={onOpenShortcuts}
           className="btn btn-secondary"
-          style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', display: 'flex', gap: '0.4rem' }}
+          style={{
+            fontSize: 'var(--font-size-xs)',
+            padding: 'var(--space-1) var(--space-3)'
+          }}
           title="Keyboard shortcuts"
         >
           <Keyboard size={14} />
-          <span className="hide-mobile">Shortcuts</span>
+          <span className="hide-mobile">Shortcuts (?)</span>
         </button>
 
         <button

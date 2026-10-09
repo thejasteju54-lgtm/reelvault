@@ -63,7 +63,7 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(reel.canonicalUrl);
-      showToast('✓ Copied canonical link to clipboard', 'info');
+      showToast('Copied link to clipboard', 'info');
     } catch {
       showToast('Failed to copy', 'error');
     }
@@ -90,7 +90,7 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
         categoryId: categoryId || null,
         tags
       });
-      showToast('✓ Reel details updated', 'success');
+      showToast('Reel details updated', 'success');
       setIsEditing(false);
     } catch (err: unknown) {
       const e = err as Error;
@@ -102,13 +102,13 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="600px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {/* Top Header & Actions Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span
               className="badge"
-              style={{ background: 'var(--bg-card-hover)', color: 'var(--text-secondary)' }}
+              style={{ fontFamily: 'var(--font-mono)' }}
             >
               Shortcode: {reel.instagramShortcode}
             </span>
@@ -116,8 +116,9 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               <span
                 className="badge"
                 style={{
-                  backgroundColor: reel.categoryColor ? `${reel.categoryColor}22` : undefined,
-                  color: reel.categoryColor || undefined
+                  backgroundColor: 'var(--bg-surface-active)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-muted)'
                 }}
               >
                 {reel.categoryName}
@@ -125,14 +126,14 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
             <button
               onClick={() => onToggleFavorite(reel.id)}
               className="btn-icon"
-              style={{ color: reel.isFavorite ? '#fbbf24' : 'var(--text-muted)' }}
+              style={{ color: reel.isFavorite ? 'var(--color-accent)' : 'var(--text-muted)' }}
               title={reel.isFavorite ? 'Favorited' : 'Favorite'}
             >
-              <Star size={18} fill={reel.isFavorite ? '#fbbf24' : 'none'} />
+              <Star size={16} fill={reel.isFavorite ? 'var(--color-accent)' : 'none'} />
             </button>
             <button
               onClick={() => onToggleWatched(reel.id)}
@@ -140,14 +141,14 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               style={{ color: reel.isWatched ? 'var(--color-success)' : 'var(--text-muted)' }}
               title={reel.isWatched ? 'Watched' : 'Mark watched'}
             >
-              <CheckCircle size={18} />
+              <CheckCircle size={16} />
             </button>
             <button
               onClick={() => onToggleArchive(reel.id)}
               className="btn-icon"
               title={reel.isArchived ? 'Restore' : 'Archive'}
             >
-              {reel.isArchived ? <ArchiveRestore size={18} /> : <Archive size={18} />}
+              {reel.isArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
             </button>
             <button
               onClick={() => onDelete(reel.id)}
@@ -155,16 +156,16 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               style={{ color: 'var(--color-danger)' }}
               title="Delete Reel"
             >
-              <Trash2 size={18} />
+              <Trash2 size={16} />
             </button>
           </div>
         </div>
 
         {/* Content View / Edit mode */}
         {isEditing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <div>
-              <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+              <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
                 Title
               </label>
               <input
@@ -172,18 +173,18 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Title..."
-                style={{ width: '100%', padding: '0.625rem 0.75rem' }}
+                style={{ width: '100%', padding: 'var(--space-2) var(--space-3)' }}
               />
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+              <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
                 Category
               </label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                style={{ width: '100%', padding: '0.625rem 0.75rem' }}
+                style={{ width: '100%', padding: 'var(--space-2) var(--space-3)' }}
               >
                 <option value="">No Category</option>
                 {categories.map((c) => (
@@ -195,10 +196,10 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
-                Tags
+              <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
+                Index Tags
               </label>
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                 <input
                   type="text"
                   value={tagInput}
@@ -210,7 +211,7 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
                     }
                   }}
                   placeholder="Add tag and press Enter"
-                  style={{ flex: 1, padding: '0.5rem 0.75rem' }}
+                  style={{ flex: 1, padding: 'var(--space-2) var(--space-3)' }}
                 />
                 <button type="button" onClick={handleAddTag} className="btn btn-secondary">
                   <Plus size={14} />
@@ -219,13 +220,13 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               </div>
 
               {tags.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
                   {tags.map((t) => (
                     <span
                       key={t}
                       className="badge badge-tag"
                       onClick={() => handleRemoveTag(t)}
-                      title="Click to remove"
+                      title="Click to remove tag"
                     >
                       #{t} ×
                     </span>
@@ -235,19 +236,19 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
-                Personal Notes
+              <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
+                Curator Notes
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 placeholder="Takeaways, action items, tutorial steps..."
-                style={{ width: '100%', padding: '0.625rem 0.75rem' }}
+                style={{ width: '100%', padding: 'var(--space-2) var(--space-3)' }}
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
@@ -267,49 +268,49 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+              <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: 600, marginBottom: 'var(--space-1)' }}>
                 {reel.title || `Instagram Reel (${reel.instagramShortcode})`}
               </h2>
               {reel.creatorUsername && (
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                  By @{reel.creatorUsername}
+                <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>
+                  Creator: @{reel.creatorUsername}
                 </p>
               )}
             </div>
 
-            {/* Notes Section */}
+            {/* Notes Section: Archival Paper Card */}
             <div
               style={{
-                background: 'var(--bg-app)',
+                backgroundColor: 'var(--bg-app)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-md)',
-                padding: '1rem'
+                borderRadius: 'var(--radius)',
+                padding: 'var(--space-3)'
               }}
             >
-              <h4 style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                NOTES & TAKEAWAYS
+              <h4 style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)', letterSpacing: '0.04em' }}>
+                CURATOR NOTES & TAKEAWAYS
               </h4>
               <p
                 style={{
-                  fontSize: '0.9375rem',
-                  lineHeight: 1.6,
+                  fontSize: 'var(--font-size-sm)',
+                  lineHeight: 'var(--line-height-normal)',
                   color: reel.notes ? 'var(--text-primary)' : 'var(--text-muted)',
                   whiteSpace: 'pre-wrap'
                 }}
               >
-                {reel.notes || 'No notes added yet. Click edit to add your insights.'}
+                {reel.notes || 'No curator notes added yet. Select edit to document insights.'}
               </p>
             </div>
 
             {/* Tags */}
             {reel.tags.length > 0 && (
               <div>
-                <h4 style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                  TAGS
+                <h4 style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
+                  INDEX TAGS
                 </h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
                   {reel.tags.map((t) => (
                     <span key={t} className="badge badge-tag">
                       #{t}
@@ -324,20 +325,21 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '0.75rem',
-                fontSize: '0.75rem',
+                gap: 'var(--space-2)',
+                fontSize: 'var(--font-size-xs)',
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--text-muted)',
-                paddingTop: '0.75rem',
+                paddingTop: 'var(--space-2)',
                 borderTop: '1px solid var(--border-subtle)'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Calendar size={14} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                <Calendar size={13} />
                 <span>Saved: {new Date(reel.createdAt).toLocaleString()}</span>
               </div>
               {reel.watchedAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-success)' }}>
-                  <CheckCircle size={14} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-success)' }}>
+                  <CheckCircle size={13} />
                   <span>Watched: {new Date(reel.watchedAt).toLocaleDateString()}</span>
                 </div>
               )}
@@ -349,17 +351,17 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '0.75rem',
-                paddingTop: '1rem',
+                gap: 'var(--space-2)',
+                paddingTop: 'var(--space-3)',
                 borderTop: '1px solid var(--border-subtle)'
               }}
             >
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <button onClick={() => setIsEditing(true)} className="btn btn-secondary">
                   Edit Details
                 </button>
                 <button onClick={handleCopyLink} className="btn btn-ghost">
-                  <Copy size={14} />
+                  <Copy size={13} />
                   <span>Copy Link</span>
                 </button>
               </div>
@@ -369,11 +371,11 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
               >
-                <InstagramIcon size={16} />
+                <InstagramIcon size={14} />
                 <span>Open on Instagram</span>
-                <ExternalLink size={14} />
+                <ExternalLink size={12} />
               </a>
             </div>
           </div>

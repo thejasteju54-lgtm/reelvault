@@ -11,7 +11,7 @@ import {
   LogOut,
   Sun,
   Moon,
-  Sparkles
+  Layers
 } from 'lucide-react';
 import { User, VaultStats } from '../../types/index.js';
 
@@ -47,18 +47,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'saved' as ActiveTab, label: 'Saved Reels', icon: Bookmark, count: stats?.total },
     { id: 'favorites' as ActiveTab, label: 'Favorites', icon: Star, count: stats?.favorites },
     { id: 'archive' as ActiveTab, label: 'Archive', icon: Archive, count: stats?.archived },
-    { id: 'tags' as ActiveTab, label: 'Tags', icon: Hash }
+    { id: 'tags' as ActiveTab, label: 'Index Tags', icon: Hash }
   ];
 
   return (
     <aside className="app-sidebar">
-      {/* Brand Logo */}
+      {/* Brand Identity: Solid Terracotta Emblem */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.625rem',
-          padding: '0.5rem 0.5rem 1.5rem 0.5rem',
+          gap: 'var(--space-3)',
+          paddingBottom: 'var(--space-5)',
           borderBottom: '1px solid var(--border-subtle)'
         }}
       >
@@ -66,26 +66,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{
             width: 32,
             height: 32,
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'var(--color-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#ffffff',
-            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)'
+            flexShrink: 0
           }}
         >
-          <Sparkles size={18} />
+          <Layers size={18} />
         </div>
         <div>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              fontSize: 'var(--font-size-base)',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: 'var(--text-primary)'
+            }}
+          >
             ReelVault
           </h2>
+          <span
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-mono)'
+            }}
+          >
+            v1.0 • Archival
+          </span>
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '1.25rem', flex: 1 }}>
+      {/* Navigation Sections */}
+      <nav
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--space-1)',
+          marginTop: 'var(--space-5)',
+          flex: 1
+        }}
+      >
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
@@ -96,27 +120,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.625rem 0.75rem',
-                borderRadius: 'var(--radius-md)',
+                gap: 'var(--space-3)',
+                padding: 'var(--space-2) var(--space-3)',
+                borderRadius: 'var(--radius)',
                 color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                background: isActive ? 'var(--bg-card-hover)' : 'transparent',
+                backgroundColor: isActive ? 'var(--bg-surface-hover)' : 'transparent',
                 fontWeight: isActive ? 600 : 500,
-                fontSize: '0.875rem',
+                fontSize: 'var(--font-size-sm)',
+                border: isActive ? '1px solid var(--border-muted)' : '1px solid transparent',
                 transition: 'all var(--transition-fast)'
               }}
             >
-              <Icon size={18} color={isActive ? 'var(--color-accent)' : 'currentColor'} />
+              <Icon
+                size={16}
+                color={isActive ? 'var(--color-primary)' : 'currentColor'}
+              />
               <span>{item.label}</span>
               {typeof item.count === 'number' && item.count > 0 && (
                 <span
                   style={{
                     marginLeft: 'auto',
-                    fontSize: '0.75rem',
-                    padding: '0.1rem 0.45rem',
-                    borderRadius: 'var(--radius-full)',
-                    background: isActive ? 'var(--color-accent-subtle)' : 'var(--bg-card)',
-                    color: isActive ? 'var(--color-accent)' : 'var(--text-muted)'
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 'var(--font-size-xs)',
+                    padding: '1px var(--space-2)',
+                    borderRadius: 'var(--radius)',
+                    backgroundColor: isActive ? 'var(--bg-surface-active)' : 'var(--bg-surface)',
+                    color: isActive ? 'var(--color-primary)' : 'var(--text-muted)',
+                    border: '1px solid var(--border-subtle)'
                   }}
                 >
                   {item.count}
@@ -132,8 +162,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.25rem',
-          paddingTop: '1rem',
+          gap: 'var(--space-1)',
+          paddingTop: 'var(--space-4)',
           borderTop: '1px solid var(--border-subtle)'
         }}
       >
@@ -143,13 +173,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.5rem 0.75rem',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.8125rem'
+            gap: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-3)',
+            borderRadius: 'var(--radius)',
+            fontSize: 'var(--font-size-xs)'
           }}
         >
-          <BarChart2 size={16} />
+          <BarChart2 size={15} />
           <span>Vault Statistics</span>
         </button>
 
@@ -159,13 +189,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.5rem 0.75rem',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.8125rem'
+            gap: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-3)',
+            borderRadius: 'var(--radius)',
+            fontSize: 'var(--font-size-xs)'
           }}
         >
-          <Download size={16} />
+          <Download size={15} />
           <span>Export Vault</span>
         </button>
 
@@ -175,14 +205,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.5rem 0.75rem',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.8125rem'
+            gap: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-3)',
+            borderRadius: 'var(--radius)',
+            fontSize: 'var(--font-size-xs)'
           }}
         >
-          <Keyboard size={16} />
-          <span>Keyboard Shortcuts</span>
+          <Keyboard size={15} />
+          <span>Shortcuts (?)</span>
         </button>
 
         <button
@@ -191,14 +221,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.5rem 0.75rem',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.8125rem'
+            gap: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-3)',
+            borderRadius: 'var(--radius)',
+            fontSize: 'var(--font-size-xs)'
           }}
         >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          <span>{theme === 'dark' ? 'Light Appearance' : 'Dark Appearance'}</span>
         </button>
       </div>
 
@@ -209,23 +239,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0.75rem 0.5rem 0.25rem 0.5rem',
-            marginTop: '0.75rem',
+            padding: 'var(--space-3) var(--space-2) 0 var(--space-2)',
+            marginTop: 'var(--space-3)',
             borderTop: '1px solid var(--border-subtle)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
             <div
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 'var(--radius-full)',
-                background: 'var(--color-accent-subtle)',
-                color: 'var(--color-accent)',
+                width: 26,
+                height: 26,
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'var(--bg-surface-active)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-muted)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.75rem',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 'var(--font-size-xs)',
                 fontWeight: 600,
                 flexShrink: 0
               }}
@@ -235,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
               <p
                 style={{
-                  fontSize: '0.8125rem',
+                  fontSize: 'var(--font-size-xs)',
                   fontWeight: 600,
                   color: 'var(--text-primary)',
                   whiteSpace: 'nowrap',
@@ -254,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             aria-label="Sign out"
             title="Sign out"
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
           </button>
         </div>
       )}

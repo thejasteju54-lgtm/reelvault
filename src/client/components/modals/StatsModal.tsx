@@ -24,102 +24,103 @@ export const StatsModal: React.FC<StatsModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="500px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <div
             style={{
-              width: 38,
-              height: 38,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--color-accent-subtle)',
-              color: 'var(--color-accent)',
+              width: 36,
+              height: 36,
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'var(--bg-surface-active)',
+              color: 'var(--color-primary)',
+              border: '1px solid var(--border-muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <BarChart2 size={20} />
+            <BarChart2 size={18} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Vault Statistics</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Overview of your saved content and learning progress
+            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600 }}>Vault Statistics</h3>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+              Summary of saved references and study progress
             </p>
           </div>
         </div>
 
-        {/* Primary KPI Grid */}
+        {/* Primary KPI Grid: High-Density Ledger Cells */}
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '0.75rem'
+            gap: 'var(--space-2)'
           }}
         >
           <div
             style={{
-              padding: '1rem',
-              background: 'var(--bg-app)',
+              padding: 'var(--space-3)',
+              backgroundColor: 'var(--bg-app)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)'
+              borderRadius: 'var(--radius)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-              <Bookmark size={14} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>
+              <Bookmark size={13} />
               <span>TOTAL REELS</span>
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
               {stats.total}
             </div>
           </div>
 
           <div
             style={{
-              padding: '1rem',
-              background: 'var(--bg-app)',
+              padding: 'var(--space-3)',
+              backgroundColor: 'var(--bg-app)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)'
+              borderRadius: 'var(--radius)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-success)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-              <CheckCircle size={14} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-success)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>
+              <CheckCircle size={13} />
               <span>WATCHED ({watchedPercent}%)</span>
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-success)' }}>
+            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>
               {stats.watched}
             </div>
           </div>
 
           <div
             style={{
-              padding: '1rem',
-              background: 'var(--bg-app)',
+              padding: 'var(--space-3)',
+              backgroundColor: 'var(--bg-app)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)'
+              borderRadius: 'var(--radius)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fbbf24', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-              <Star size={14} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-accent)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>
+              <Star size={13} />
               <span>FAVORITES</span>
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fbbf24' }}>
+            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}>
               {stats.favorites}
             </div>
           </div>
 
           <div
             style={{
-              padding: '1rem',
-              background: 'var(--bg-app)',
+              padding: 'var(--space-3)',
+              backgroundColor: 'var(--bg-app)',
               border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)'
+              borderRadius: 'var(--radius)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-              <Archive size={14} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>
+              <Archive size={13} />
               <span>ARCHIVED</span>
             </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
               {stats.archived}
             </div>
           </div>
@@ -127,17 +128,17 @@ export const StatsModal: React.FC<StatsModalProps> = ({
 
         {/* Progress Bar */}
         {stats.total > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               <span>Watch Completion</span>
-              <span>{stats.watched} of {stats.total} watched</span>
+              <span>{stats.watched} of {stats.total} reviewed</span>
             </div>
             <div
               style={{
-                height: 8,
+                height: 6,
                 width: '100%',
-                background: 'var(--bg-app)',
-                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--bg-app)',
+                borderRadius: 'var(--radius)',
                 overflow: 'hidden',
                 border: '1px solid var(--border-subtle)'
               }}
@@ -146,8 +147,8 @@ export const StatsModal: React.FC<StatsModalProps> = ({
                 style={{
                   height: '100%',
                   width: `${watchedPercent}%`,
-                  background: 'var(--color-success)',
-                  borderRadius: 'var(--radius-full)',
+                  backgroundColor: 'var(--color-success)',
+                  borderRadius: 'var(--radius)',
                   transition: 'width var(--transition-normal)'
                 }}
               />
@@ -157,12 +158,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({
 
         {/* Top Tags */}
         {stats.topTags && stats.topTags.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              <Hash size={14} />
-              <span style={{ fontWeight: 600 }}>TOP TAGS</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+              <Hash size={13} />
+              <span style={{ fontWeight: 600 }}>TOP INDEX TAGS</span>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
               {stats.topTags.map((tag) => (
                 <button
                   key={tag.name}
@@ -171,17 +172,17 @@ export const StatsModal: React.FC<StatsModalProps> = ({
                     onClose();
                   }}
                   className="badge badge-tag"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.3rem 0.6rem' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', padding: '2px var(--space-2)' }}
                 >
                   <span>#{tag.name}</span>
-                  <span style={{ opacity: 0.65, fontSize: '0.7rem' }}>({tag.count})</span>
+                  <span style={{ opacity: 0.7, fontSize: 'var(--font-size-xs)' }}>({tag.count})</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
           <button onClick={onClose} className="btn btn-secondary">
             Close
           </button>

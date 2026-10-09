@@ -385,29 +385,38 @@ export const App: React.FC = () => {
 
           {/* Tags view specific header */}
           {currentTab === 'tags' && (
-            <div style={{ marginTop: '1.5rem', background: 'var(--bg-card)', padding: '1.25rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <Hash size={18} color="var(--color-accent)" />
-                <span>Browse by Tags</span>
+            <div
+              style={{
+                marginTop: 'var(--space-5)',
+                backgroundColor: 'var(--bg-surface)',
+                padding: 'var(--space-4)',
+                borderRadius: 'var(--radius)',
+                border: '1px solid var(--border-subtle)'
+              }}
+            >
+              <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+                <Hash size={18} color="var(--color-primary)" />
+                <span>Browse by Index Tags</span>
               </h3>
               {tags.length === 0 ? (
-                <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                  No tags added yet. Add tags when saving Reels (e.g. #recipes, #design, #coding).
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                  No tags cataloged yet. Add index tags when saving Reels (e.g. #typography, #lighting, #motion).
                 </p>
               ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
                   {tags.map((t) => {
                     const isSelected = filters.tag === t.name;
                     return (
                       <button
                         key={t.id}
                         onClick={() => handleFilterChange({ tag: isSelected ? undefined : t.name })}
-                        className={`badge badge-tag`}
+                        className="badge badge-tag"
                         style={{
-                          padding: '0.4rem 0.75rem',
-                          fontSize: '0.8125rem',
-                          background: isSelected ? 'var(--color-accent)' : undefined,
-                          color: isSelected ? '#ffffff' : undefined
+                          padding: 'var(--space-1) var(--space-3)',
+                          fontSize: 'var(--font-size-xs)',
+                          backgroundColor: isSelected ? 'var(--color-primary)' : undefined,
+                          color: isSelected ? '#ffffff' : undefined,
+                          borderColor: isSelected ? 'var(--color-primary)' : undefined
                         }}
                       >
                         #{t.name} ({t.count ?? 0})
@@ -456,23 +465,23 @@ export const App: React.FC = () => {
                   : currentTab === 'archive'
                   ? 'Archive is empty'
                   : currentTab === 'unwatched'
-                  ? 'All caught up! No unwatched Reels'
+                  ? 'Queue completed: zero unwatched Reels'
                   : currentTab === 'tags' && filters.tag
                   ? `No Reels tagged #${filters.tag}`
-                  : 'Your vault is empty'
+                  : 'Your vault ledger is empty'
               }
               description={
                 filters.q
                   ? 'Try refining your search keyword or clearing active filters.'
                   : currentTab === 'favorites'
-                  ? 'Star any Reel to keep your most valuable references right here.'
+                  ? 'Star any Reel to keep your most valuable reference study items right here.'
                   : currentTab === 'archive'
-                  ? 'Archived reels keep your main collection clean and organized.'
+                  ? 'Archived reels remain searchable while keeping your primary workstation ledger focused.'
                   : currentTab === 'unwatched'
-                  ? 'Save more reels to build up your learning and research queue.'
-                  : 'Paste an Instagram Reel link above and click Save to start your vault.'
+                  ? 'Save additional reels above to build your study queue.'
+                  : 'Paste an Instagram Reel URL in the field above and select Save Reel to begin your collection.'
               }
-              actionLabel={filters.q || filters.tag ? 'Clear Filters' : undefined}
+              actionLabel={filters.q || filters.tag ? 'Reset Filters' : undefined}
               onAction={
                 filters.q || filters.tag
                   ? () => handleFilterChange({ q: '', tag: undefined })

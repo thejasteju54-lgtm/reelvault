@@ -37,9 +37,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="toast-container" role="region" aria-label="Notifications">
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast toast-${toast.type}`}>
-            {toast.type === 'success' && <CheckCircle2 size={18} color="var(--color-success)" />}
-            {toast.type === 'error' && <AlertCircle size={18} color="var(--color-danger)" />}
-            {toast.type === 'info' && <Info size={18} color="var(--color-accent)" />}
+            {toast.type === 'success' && <CheckCircle2 size={16} color="var(--color-success)" />}
+            {toast.type === 'error' && <AlertCircle size={16} color="var(--color-danger)" />}
+            {toast.type === 'info' && <Info size={16} color="var(--color-primary)" />}
             <span>{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}
@@ -47,7 +47,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               style={{ marginLeft: 'auto', padding: '2px' }}
               aria-label="Dismiss notification"
             >
-              <X size={14} />
+              <X size={13} />
             </button>
           </div>
         ))}
