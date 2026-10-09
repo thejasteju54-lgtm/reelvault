@@ -37,15 +37,36 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {getGreeting()}{currentUser?.displayName ? `, ${currentUser.displayName}` : ''}
           </span>
-          <h1
-            style={{
-              fontSize: 'var(--font-size-md)',
-              lineHeight: 'var(--line-height-tight)',
-              fontWeight: 600
-            }}
-          >
-            ReelVault Ledger
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <h1
+              style={{
+                fontSize: 'var(--font-size-md)',
+                lineHeight: 'var(--line-height-tight)',
+                fontWeight: 600
+              }}
+            >
+              ReelVault Ledger
+            </h1>
+            {import.meta.env.DEV && (
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  padding: '1px 6px',
+                  borderRadius: 'var(--radius)',
+                  backgroundColor: 'var(--color-accent-subtle)',
+                  color: 'var(--color-accent)',
+                  border: '1px solid var(--border-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}
+                title="Running in local development mode"
+              >
+                Local Dev
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
