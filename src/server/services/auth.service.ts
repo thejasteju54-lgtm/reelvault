@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
 import { getDb, runTransaction } from '../db/database.js';
 import { DEFAULT_USER_CATEGORIES } from '../db/schema.js';
 import { hashPassword, verifyPassword, generateUuid } from '../utils/crypto.js';
 import { User, AuthResponseData } from '../../types/index.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'reelvault_dev_secret_key_minimum_32_characters_long_123';
-const TOKEN_EXPIRY = '7d';
+const JWT_SECRET = env.JWT_SECRET;
+const TOKEN_EXPIRY = env.SESSION_EXPIRES_IN;
 
 export class AuthError extends Error {
   constructor(message: string, public code: string, public statusCode: number = 400) {
@@ -16,7 +17,7 @@ export class AuthError extends Error {
 
 export function signToken(user: { id: string; email: string }): string {
   return jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-    expiresIn: TOKEN_EXPIRY
+    expiresIn: TOKEN_EXPIRY as jwt.SignOptions['expiresIn']
   });
 }
 

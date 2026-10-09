@@ -1,7 +1,8 @@
+import { env } from './config/env.js';
 import { createApp } from './app.js';
 import { initDatabase, closeDatabase } from './db/database.js';
 
-const PORT = Number(process.env.PORT) || 4000;
+const PORT = env.PORT;
 
 // Initialize Database connection and schema
 initDatabase();
