@@ -68,8 +68,12 @@ export function createApp(): express.Application {
   app.use('/api', statsRoutes);
 
   // Serve production client build if exists
-  const clientDist = path.resolve(process.cwd(), 'dist/client');
-  if (fs.existsSync(clientDist)) {
+  const candidateDirs = [
+    path.resolve(process.cwd(), 'dist/client'),
+    path.resolve(process.cwd(), 'dist')
+  ];
+  const clientDist = candidateDirs.find((dir) => fs.existsSync(path.join(dir, 'index.html')));
+  if (clientDist) {
     app.use(express.static(clientDist));
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api')) return next();

@@ -14,22 +14,31 @@ export function initDatabase(config: DatabaseConfig = {}): DatabaseSync {
     return dbInstance;
   }
 
-  const dbPath = config.dbPath || process.env.DATABASE_PATH || './data/reelvault.sqlite';
+  const defaultPath = process.env.VERCEL ? '/tmp/reelvault.sqlite' : './data/reelvault.sqlite';
+  const dbPath = config.dbPath || process.env.DATABASE_PATH || defaultPath;
 
   if (dbPath !== ':memory:') {
     const dir = path.dirname(dbPath);
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+      try {
+        fs.mkdirSync(dir, { recursive: true });
+      } catch {
+        // Ignored if directory already exists or created concurrently
+      }
     }
   }
 
   const db = new DatabaseSync(dbPath);
 
   // Configure SQLite for high performance and integrity
-  db.exec('PRAGMA foreign_keys = ON;');
-  if (dbPath !== ':memory:') {
-    db.exec('PRAGMA journal_mode = WAL;');
-    db.exec('PRAGMA synchronous = NORMAL;');
+  try {
+    db.exec('PRAGMA foreign_keys = ON;');
+    if (dbPath !== ':memory:' && !process.env.VERCEL) {
+      db.exec('PRAGMA journal_mode = WAL;');
+      db.exec('PRAGMA synchronous = NORMAL;');
+    }
+  } catch (pragmaErr) {
+    console.warn('SQLite PRAGMA warning:', pragmaErr);
   }
 
   // Execute schema creation
