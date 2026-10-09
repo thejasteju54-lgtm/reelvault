@@ -16,6 +16,7 @@ import {
   ReelQueryFilters
 } from '../types/index.js';
 import { api, getStoredToken } from './services/api.js';
+import { analytics } from './services/analytics.js';
 import { Header } from './components/layout/Header.js';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar.js';
 import { MobileNav } from './components/layout/MobileNav.js';
@@ -30,6 +31,10 @@ import { ExportModal } from './components/modals/ExportModal.js';
 import { ReelCardSkeleton } from './components/ui/Skeleton.js';
 import { EmptyState } from './components/ui/EmptyState.js';
 import { ConfirmDialog } from './components/ui/ConfirmDialog.js';
+import { CookieBanner } from './components/ui/CookieBanner.js';
+import { PrivacyPolicy } from './components/legal/PrivacyPolicy.js';
+import { TermsOfService } from './components/legal/TermsOfService.js';
+import { NotFoundPage } from './components/ui/NotFoundPage.js';
 import { useToast } from './components/ui/Toast.js';
 
 export const App: React.FC = () => {
@@ -45,8 +50,17 @@ export const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isInitializingAuth, setIsInitializingAuth] = useState(true);
 
-  // Navigation tab state
-  const [currentTab, setCurrentTab] = useState<ActiveTab>('dashboard');
+  // Navigation tab state initialized from URL path
+  const [currentTab, setCurrentTab] = useState<ActiveTab>(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname;
+      if (p === '/privacy') return 'privacy';
+      if (p === '/terms') return 'terms';
+      if (p === '/' || p === '') return 'dashboard';
+      return 'not-found';
+    }
+    return 'dashboard';
+  });
 
   // Vault data state
   const [reels, setReels] = useState<Reel[]>([]);
@@ -72,6 +86,37 @@ export const App: React.FC = () => {
 
   const { showToast } = useToast();
 
+  // Route Synchronization with Browser History
+  useEffect(() => {
+    const handlePopState = () => {
+      const p = window.location.pathname;
+      if (p === '/privacy') {
+        setCurrentTab('privacy');
+      } else if (p === '/terms') {
+        setCurrentTab('terms');
+      } else if (p === '/' || p === '') {
+        setCurrentTab('dashboard');
+      } else {
+        setCurrentTab('not-found');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = useCallback((tab: ActiveTab, path?: string) => {
+    setCurrentTab(tab);
+    const targetPath = path || (tab === 'privacy' ? '/privacy' : tab === 'terms' ? '/terms' : '/');
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+    if (tab !== 'privacy' && tab !== 'terms' && tab !== 'not-found') {
+      document.title = 'ReelVault: Personal Instagram Reel Bookmark Vault';
+    }
+    analytics.pageView(targetPath);
+  }, []);
+
   // Apply theme to documentElement
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -88,7 +133,10 @@ export const App: React.FC = () => {
       const token = getStoredToken();
       if (!token) {
         setIsInitializingAuth(false);
-        setIsAuthModalOpen(true);
+        // Only open auth modal on app dashboard, not when viewing legal docs directly
+        if (currentTab !== 'privacy' && currentTab !== 'terms') {
+          setIsAuthModalOpen(true);
+        }
         return;
       }
 
@@ -97,7 +145,9 @@ export const App: React.FC = () => {
         setCurrentUser(user);
       } catch {
         api.auth.logout();
-        setIsAuthModalOpen(true);
+        if (currentTab !== 'privacy' && currentTab !== 'terms') {
+          setIsAuthModalOpen(true);
+        }
       } finally {
         setIsInitializingAuth(false);
       }
@@ -113,89 +163,86 @@ export const App: React.FC = () => {
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, [showToast]);
+  }, [currentTab, showToast]);
 
   // Load vault metadata (categories, tags, stats)
   const refreshMetadata = useCallback(async () => {
     if (!currentUser) return;
     try {
-      const [catsData, tagsData, statsData] = await Promise.all([
+      const [cats, tgs, sts] = await Promise.all([
         api.categories.list(),
         api.tags.list(),
         api.stats.get()
       ]);
-      setCategories(catsData);
-      setTags(tagsData);
-      setStats(statsData);
-    } catch (err) {
-      console.error('Failed to refresh metadata', err);
+      setCategories(cats);
+      setTags(tgs);
+      setStats(sts);
+    } catch {
+      // Quiet fail on background stats refresh
     }
   }, [currentUser]);
 
-  // Load reels with current filters + active tab overrides
+  // Load reels with current filters
   const loadReels = useCallback(async () => {
     if (!currentUser) return;
     setIsLoadingReels(true);
 
     try {
-      const query: ReelQueryFilters = { ...filters };
+      const queryParams: ReelQueryFilters = {
+        ...filters,
+        limit: 50
+      };
 
-      // Tab specific constraints
       if (currentTab === 'favorites') {
-        query.favorite = true;
-        query.archived = false;
+        queryParams.favorite = true;
+        queryParams.archived = false;
       } else if (currentTab === 'archive') {
-        query.archived = true;
-      } else if (currentTab === 'unwatched') {
-        query.status = 'unwatched';
-        query.archived = false;
-      } else {
-        // dashboard, saved, tags
-        query.archived = false;
+        queryParams.archived = true;
+      } else if (currentTab === 'saved') {
+        queryParams.archived = false;
+      } else if (currentTab === 'dashboard') {
+        queryParams.archived = false;
       }
 
-      const res = await api.reels.list(query);
+      const res = await api.reels.list(queryParams);
       setReels(res.reels);
       setTotalReelsCount(res.total);
-    } catch (err: unknown) {
-      const e = err as Error;
-      showToast(e.message || 'Error loading Reels', 'error');
+    } catch {
+      showToast('Failed to load reels. Please refresh.', 'error');
     } finally {
       setIsLoadingReels(false);
     }
   }, [currentUser, currentTab, filters, showToast]);
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && currentTab !== 'privacy' && currentTab !== 'terms' && currentTab !== 'not-found') {
+      loadReels();
       refreshMetadata();
     }
-  }, [currentUser, refreshMetadata]);
+  }, [currentUser, currentTab, filters, loadReels, refreshMetadata]);
 
-  useEffect(() => {
-    if (currentUser) {
-      loadReels();
-    }
-  }, [currentUser, loadReels]);
-
-  // Filter change helper
-  const handleFilterChange = (partial: Partial<ReelQueryFilters>) => {
-    setFilters((prev) => ({ ...prev, ...partial }));
-  };
-
-  // Quick save handler
+  // Handle Quick Save
   const handleQuickSave = async (payload: {
     url: string;
     title?: string;
     notes?: string;
     categoryId?: string;
     tags?: string[];
-  }): Promise<Reel> => {
-    const newReel = await api.reels.save(payload);
+    website?: string;
+  }) => {
+    const saved = await api.reels.save(payload);
+    analytics.trackEvent('reel_saved', { hasTags: Boolean(payload.tags && payload.tags.length > 0) });
     await Promise.all([loadReels(), refreshMetadata()]);
-    return newReel;
+    return saved;
   };
 
-  // Toggle handlers with optimistic updates
+  const handleFilterChange = (newFilters: Partial<ReelQueryFilters>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    if (newFilters.q) {
+      analytics.trackEvent('search_performed', { q: newFilters.q });
+    }
+  };
+
   const handleToggleFavorite = async (reelId: string) => {
     setReels((prev) =>
       prev.map((r) => (r.id === reelId ? { ...r, isFavorite: !r.isFavorite } : r))
@@ -225,7 +272,7 @@ export const App: React.FC = () => {
   const handleToggleArchive = async (reelId: string) => {
     try {
       await api.reels.toggleArchive(reelId);
-      showToast('✓ Reel archive status updated', 'success');
+      showToast('Reel archive status updated', 'success');
       loadReels();
       refreshMetadata();
     } catch {
@@ -249,7 +296,7 @@ export const App: React.FC = () => {
     if (!deletingReelId) return;
     try {
       await api.reels.delete(deletingReelId);
-      showToast('✓ Reel deleted from vault', 'success');
+      showToast('Reel deleted from vault', 'success');
       setDeletingReelId(null);
       if (selectedReel?.id === deletingReelId) {
         setIsDetailModalOpen(false);
@@ -305,19 +352,19 @@ export const App: React.FC = () => {
         const keyLower = e.key.toLowerCase();
         if (keyLower === 'd') {
           e.preventDefault();
-          setCurrentTab('dashboard');
+          navigateTo('dashboard', '/');
         } else if (keyLower === 's') {
           e.preventDefault();
-          setCurrentTab('saved');
+          navigateTo('saved', '/');
         } else if (keyLower === 'f') {
           e.preventDefault();
-          setCurrentTab('favorites');
+          navigateTo('favorites', '/');
         } else if (keyLower === 'a') {
           e.preventDefault();
-          setCurrentTab('archive');
+          navigateTo('archive', '/');
         } else if (keyLower === 't') {
           e.preventDefault();
-          setCurrentTab('tags');
+          navigateTo('tags', '/');
         }
         lastKey = '';
         return;
@@ -337,7 +384,7 @@ export const App: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [navigateTo]);
 
   // Filter tags helper
   const availableTags = useMemo(() => {
@@ -350,8 +397,7 @@ export const App: React.FC = () => {
       <Sidebar
         currentTab={currentTab}
         onSelectTab={(tab) => {
-          setCurrentTab(tab);
-          // clear tag filter when explicitly clicking tabs
+          navigateTo(tab);
           if (tab !== 'tags') {
             setFilters((prev) => ({ ...prev, tag: undefined }));
           }
@@ -364,6 +410,9 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onNavigateToPrivacy={() => navigateTo('privacy', '/privacy')}
+        onNavigateToTerms={() => navigateTo('terms', '/terms')}
+        onResetCookieConsent={() => analytics.resetConsent()}
       />
 
       {/* Main Content Area */}
@@ -375,140 +424,152 @@ export const App: React.FC = () => {
           onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
         />
 
-        <div className="content-container">
-          {/* Quick Save Bar always accessible */}
-          <QuickSaveBar
-            categories={categories}
-            onSave={handleQuickSave}
-            onSelectReel={handleSelectReelById}
-          />
-
-          {/* Tags view specific header */}
-          {currentTab === 'tags' && (
-            <div
-              style={{
-                marginTop: 'var(--space-5)',
-                backgroundColor: 'var(--bg-surface)',
-                padding: 'var(--space-4)',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border-subtle)'
-              }}
-            >
-              <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
-                <Hash size={18} color="var(--color-primary)" />
-                <span>Browse by Index Tags</span>
-              </h3>
-              {tags.length === 0 ? (
-                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
-                  No tags cataloged yet. Add index tags when saving Reels (e.g. #typography, #lighting, #motion).
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
-                  {tags.map((t) => {
-                    const isSelected = filters.tag === t.name;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => handleFilterChange({ tag: isSelected ? undefined : t.name })}
-                        className="badge badge-tag"
-                        style={{
-                          padding: 'var(--space-1) var(--space-3)',
-                          fontSize: 'var(--font-size-xs)',
-                          backgroundColor: isSelected ? 'var(--color-primary)' : undefined,
-                          color: isSelected ? '#ffffff' : undefined,
-                          borderColor: isSelected ? 'var(--color-primary)' : undefined
-                        }}
-                      >
-                        #{t.name} ({t.count ?? 0})
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Filter Bar with search, category, sort */}
-          <FilterBar
-            filters={filters}
-            onChangeFilters={handleFilterChange}
-            categories={categories}
-            availableTags={availableTags}
-            totalResults={totalReelsCount}
-          />
-
-          {/* Reels Content Grid */}
-          {isLoadingReels ? (
-            <div className="reels-grid">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <ReelCardSkeleton key={idx} />
-              ))}
-            </div>
-          ) : reels.length === 0 ? (
-            <EmptyState
-              icon={
-                currentTab === 'favorites'
-                  ? Star
-                  : currentTab === 'archive'
-                  ? Archive
-                  : currentTab === 'tags'
-                  ? Hash
-                  : filters.q
-                  ? Search
-                  : Bookmark
-              }
-              title={
-                filters.q
-                  ? `No Reels found for "${filters.q}"`
-                  : currentTab === 'favorites'
-                  ? 'No favorite Reels yet'
-                  : currentTab === 'archive'
-                  ? 'Archive is empty'
-                  : currentTab === 'unwatched'
-                  ? 'Queue completed: zero unwatched Reels'
-                  : currentTab === 'tags' && filters.tag
-                  ? `No Reels tagged #${filters.tag}`
-                  : 'Your vault ledger is empty'
-              }
-              description={
-                filters.q
-                  ? 'Try refining your search keyword or clearing active filters.'
-                  : currentTab === 'favorites'
-                  ? 'Star any Reel to keep your most valuable reference study items right here.'
-                  : currentTab === 'archive'
-                  ? 'Archived reels remain searchable while keeping your primary workstation ledger focused.'
-                  : currentTab === 'unwatched'
-                  ? 'Save additional reels above to build your study queue.'
-                  : 'Paste an Instagram Reel URL in the field above and select Save Reel to begin your collection.'
-              }
-              actionLabel={filters.q || filters.tag ? 'Reset Filters' : undefined}
-              onAction={
-                filters.q || filters.tag
-                  ? () => handleFilterChange({ q: '', tag: undefined })
-                  : undefined
-              }
+        {/* View Router */}
+        {currentTab === 'privacy' ? (
+          <PrivacyPolicy onBack={() => navigateTo('dashboard', '/')} />
+        ) : currentTab === 'terms' ? (
+          <TermsOfService onBack={() => navigateTo('dashboard', '/')} />
+        ) : currentTab === 'not-found' ? (
+          <NotFoundPage onGoHome={() => navigateTo('dashboard', '/')} />
+        ) : (
+          <div className="content-container">
+            {/* Quick Save Bar always accessible (Primary CTA) */}
+            <QuickSaveBar
+              categories={categories}
+              onSave={handleQuickSave}
+              onSelectReel={handleSelectReelById}
             />
-          ) : (
-            <div className="reels-grid">
-              {reels.map((reel) => (
-                <ReelCard
-                  key={reel.id}
-                  reel={reel}
-                  onOpenDetails={handleOpenDetailModal}
-                  onToggleFavorite={handleToggleFavorite}
-                  onToggleWatched={handleToggleWatched}
-                  onToggleArchive={handleToggleArchive}
-                  onDelete={(id) => setDeletingReelId(id)}
-                  onSelectTag={(t) => handleFilterChange({ tag: t })}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+
+            {/* Tags view specific header */}
+            {currentTab === 'tags' && (
+              <div
+                style={{
+                  marginTop: 'var(--space-5)',
+                  backgroundColor: 'var(--bg-surface)',
+                  padding: 'var(--space-4)',
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+                  <Hash size={18} color="var(--color-primary)" />
+                  <span>Browse by Index Tags</span>
+                </h3>
+                {tags.length === 0 ? (
+                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                    No tags cataloged yet. Add index tags when saving Reels (e.g. #typography, #lighting, #motion).
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
+                    {tags.map((t) => {
+                      const isSelected = filters.tag === t.name;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => handleFilterChange({ tag: isSelected ? undefined : t.name })}
+                          className="badge badge-tag"
+                          style={{
+                            padding: 'var(--space-1) var(--space-3)',
+                            fontSize: 'var(--font-size-xs)',
+                            backgroundColor: isSelected ? 'var(--color-primary)' : undefined,
+                            color: isSelected ? '#ffffff' : undefined,
+                            borderColor: isSelected ? 'var(--color-primary)' : undefined
+                          }}
+                        >
+                          #{t.name} ({t.count ?? 0})
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Filter Bar with search, category, sort */}
+            <FilterBar
+              filters={filters}
+              onChangeFilters={handleFilterChange}
+              categories={categories}
+              availableTags={availableTags}
+              totalResults={totalReelsCount}
+            />
+
+            {/* Reels Content Grid */}
+            {isLoadingReels ? (
+              <div className="reels-grid">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <ReelCardSkeleton key={idx} />
+                ))}
+              </div>
+            ) : reels.length === 0 ? (
+              <EmptyState
+                icon={
+                  currentTab === 'favorites'
+                    ? Star
+                    : currentTab === 'archive'
+                    ? Archive
+                    : currentTab === 'tags'
+                    ? Hash
+                    : filters.q
+                    ? Search
+                    : Bookmark
+                }
+                title={
+                  filters.q
+                    ? `No Reels found for "${filters.q}"`
+                    : currentTab === 'favorites'
+                    ? 'No favorite Reels yet'
+                    : currentTab === 'archive'
+                    ? 'Archive is empty'
+                    : currentTab === 'unwatched'
+                    ? 'Queue completed: zero unwatched Reels'
+                    : currentTab === 'tags' && filters.tag
+                    ? `No Reels tagged #${filters.tag}`
+                    : 'Your vault ledger is empty'
+                }
+                description={
+                  filters.q
+                    ? 'Try refining your search keyword or clearing active filters.'
+                    : currentTab === 'favorites'
+                    ? 'Star any Reel to keep your most valuable reference study items right here.'
+                    : currentTab === 'archive'
+                    ? 'Archived reels remain searchable while keeping your primary workstation ledger focused.'
+                    : currentTab === 'unwatched'
+                    ? 'Save additional reels above to build your study queue.'
+                    : 'Paste an Instagram Reel URL in the field above and select Save Reel to begin your collection.'
+                }
+                actionLabel={filters.q || filters.tag ? 'Reset Filters' : undefined}
+                onAction={
+                  filters.q || filters.tag
+                    ? () => handleFilterChange({ q: '', tag: undefined })
+                    : undefined
+                }
+              />
+            ) : (
+              <div className="reels-grid">
+                {reels.map((reel) => (
+                  <ReelCard
+                    key={reel.id}
+                    reel={reel}
+                    onOpenDetails={handleOpenDetailModal}
+                    onToggleFavorite={handleToggleFavorite}
+                    onToggleWatched={handleToggleWatched}
+                    onToggleArchive={handleToggleArchive}
+                    onDelete={(id) => setDeletingReelId(id)}
+                    onSelectTag={(t) => handleFilterChange({ tag: t })}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Mobile Navigation Bar */}
-        <MobileNav currentTab={currentTab} onSelectTab={setCurrentTab} />
+        <MobileNav currentTab={currentTab} onSelectTab={(tab) => navigateTo(tab)} />
       </main>
+
+      {/* Cookie Consent Banner (Items 5 & 19) */}
+      <CookieBanner onNavigateToPrivacy={() => navigateTo('privacy', '/privacy')} />
 
       {/* Modals & Dialogs */}
       <AuthModal
@@ -521,6 +582,8 @@ export const App: React.FC = () => {
         onClose={() => {
           if (currentUser) setIsAuthModalOpen(false);
         }}
+        onNavigateToPrivacy={() => navigateTo('privacy', '/privacy')}
+        onNavigateToTerms={() => navigateTo('terms', '/terms')}
       />
 
       <ReelDetailModal
@@ -546,7 +609,7 @@ export const App: React.FC = () => {
         stats={stats}
         onClose={() => setIsStatsModalOpen(false)}
         onSelectTag={(tag) => {
-          setCurrentTab('tags');
+          navigateTo('tags', '/');
           handleFilterChange({ tag });
         }}
       />

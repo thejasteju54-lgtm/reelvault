@@ -9,26 +9,61 @@ interface AuthModalProps {
   isOpen: boolean;
   onSuccess: (user: User) => void;
   onClose: () => void;
+  onNavigateToPrivacy?: () => void;
+  onNavigateToTerms?: () => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onSuccess,
+  onClose,
+  onNavigateToPrivacy,
+  onNavigateToTerms
+}) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [honeypot, setHoneypot] = useState(''); // Anti-bot honeypot
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const { showToast } = useToast();
+
+  const validateInputs = () => {
+    let isValid = true;
+    setEmailError(null);
+    setPasswordError(null);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      setEmailError('Please enter a valid email address.');
+      isValid = false;
+    }
+
+    if (!password || password.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      isValid = false;
+    }
+
+    return isValid;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+
+    if (!validateInputs()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       if (mode === 'login') {
-        const res = await api.auth.login(email, password);
+        const res = await api.auth.login(email.trim(), password, honeypot || undefined);
         showToast('Signed into vault', 'success');
         onSuccess({
           id: res.user.id,
@@ -38,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
           updatedAt: new Date().toISOString()
         });
       } else {
-        const res = await api.auth.register(email, password, displayName || undefined);
+        const res = await api.auth.register(email.trim(), password, displayName.trim() || undefined, honeypot || undefined);
         showToast('Account registered successfully', 'success');
         onSuccess({
           id: res.user.id,
@@ -60,6 +95,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
     setEmail('demo@reelvault.app');
     setPassword('demo1234');
     setErrorMsg(null);
+    setEmailError(null);
+    setPasswordError(null);
     setIsLoading(true);
 
     try {
@@ -131,6 +168,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
             onClick={() => {
               setMode('login');
               setErrorMsg(null);
+              setEmailError(null);
+              setPasswordError(null);
             }}
             style={{
               flex: 1,
@@ -151,6 +190,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
             onClick={() => {
               setMode('register');
               setErrorMsg(null);
+              setEmailError(null);
+              setPasswordError(null);
             }}
             style={{
               flex: 1,
@@ -188,6 +229,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          {/* Honeypot hidden input for spam bots */}
+          <input
+            type="text"
+            name="website"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+            aria-hidden="true"
+          />
+
           {mode === 'register' && (
             <div>
               <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
@@ -222,11 +275,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
                 placeholder="name@example.com"
-                style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem' }}
+                style={{
+                  width: '100%',
+                  padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem',
+                  borderColor: emailError ? 'var(--color-danger)' : undefined
+                }}
               />
             </div>
+            {emailError && (
+              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-danger)', marginTop: '2px', display: 'block' }}>
+                {emailError}
+              </span>
+            )}
           </div>
 
           <div>
@@ -243,11 +308,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
                 required
                 minLength={6}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError(null);
+                }}
                 placeholder="Minimum 6 characters"
-                style={{ width: '100%', padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem' }}
+                style={{
+                  width: '100%',
+                  padding: 'var(--space-2) var(--space-3) var(--space-2) 2.25rem',
+                  borderColor: passwordError ? 'var(--color-danger)' : undefined
+                }}
               />
             </div>
+            {passwordError && (
+              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-danger)', marginTop: '2px', display: 'block' }}>
+                {passwordError}
+              </span>
+            )}
           </div>
 
           <button
@@ -268,6 +345,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
           >
             Enter as Demo Curator
           </button>
+
+          {/* Legal Compliance Links (Items 1 & 2) */}
+          <div style={{ textAlign: 'center', marginTop: 'var(--space-2)', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+            <span>By proceeding, you agree to ReelVault </span>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onNavigateToTerms?.();
+              }}
+              style={{ color: 'var(--color-primary)', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+            >
+              Terms of Service
+            </button>
+            <span> and </span>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onNavigateToPrivacy?.();
+              }}
+              style={{ color: 'var(--color-primary)', textDecoration: 'underline', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+            >
+              Privacy Policy
+            </button>
+            <span>.</span>
+          </div>
         </form>
       </div>
     </Modal>

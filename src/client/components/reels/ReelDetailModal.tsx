@@ -171,6 +171,7 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               <input
                 type="text"
                 value={title}
+                maxLength={255}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Title..."
                 style={{ width: '100%', padding: 'var(--space-2) var(--space-3)' }}
@@ -203,6 +204,7 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
                 <input
                   type="text"
                   value={tagInput}
+                  maxLength={50}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -241,6 +243,7 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
               </label>
               <textarea
                 value={notes}
+                maxLength={5000}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 placeholder="Takeaways, action items, tutorial steps..."

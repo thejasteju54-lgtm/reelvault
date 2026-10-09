@@ -71,7 +71,13 @@ export const ReelCard: React.FC<ReelCardProps> = ({
       {/* Thumbnail area with fallback */}
       <div className="reel-card-thumbnail">
         {reel.thumbnailUrl ? (
-          <img src={reel.thumbnailUrl} alt={reel.title || 'Reel thumbnail'} loading="lazy" />
+          <img
+            src={reel.thumbnailUrl}
+            alt={reel.title ? `Preview for ${reel.title}` : `Reel preview for shortcode ${reel.instagramShortcode}`}
+            width={320}
+            height={180}
+            loading="lazy"
+          />
         ) : (
           <div
             style={{

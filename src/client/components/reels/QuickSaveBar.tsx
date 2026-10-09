@@ -30,12 +30,16 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [duplicateReelId, setDuplicateReelId] = useState<string | null>(null);
 
+  const [honeypot, setHoneypot] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
 
   // 'N' key global shortcut to focus Save input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if already inside an input or textarea
       const target = e.target as HTMLElement;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName)) return;
 
@@ -66,6 +70,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
       const text = await navigator.clipboard.readText();
       if (text) {
         setUrl(text);
+        setUrlError(null);
         setDuplicateReelId(null);
         showToast('Pasted URL from clipboard', 'info', 1500);
       }
@@ -76,7 +81,14 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUrlError(null);
     if (!url.trim()) return;
+
+    // Client-side URL validation
+    if (!url.includes('instagram.com') && !url.startsWith('http')) {
+      setUrlError('Please enter a valid Instagram Reel URL (e.g., https://www.instagram.com/reel/...).');
+      return;
+    }
 
     setIsSubmitting(true);
     setDuplicateReelId(null);
@@ -87,7 +99,8 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
         title: title.trim() || undefined,
         notes: notes.trim() || undefined,
         categoryId: categoryId || undefined,
-        tags: tags.length > 0 ? tags : undefined
+        tags: tags.length > 0 ? tags : undefined,
+        website: honeypot || undefined
       });
 
       showToast('Reel cataloged in vault', 'success');
@@ -107,7 +120,9 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
         setDuplicateReelId(apiErr.existingReelId || null);
         showToast('This Reel is already cataloged in your vault.', 'error');
       } else {
-        showToast(apiErr.message || 'Unable to save Reel. Verify the URL format.', 'error');
+        const msg = apiErr.message || 'Unable to save Reel. Verify the URL format.';
+        setUrlError(msg);
+        showToast(msg, 'error');
       }
     } finally {
       setIsSubmitting(false);
@@ -125,6 +140,18 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
       }}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        {/* Anti-bot honeypot field */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+          aria-hidden="true"
+        />
+
         {/* Main URL input row */}
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
@@ -134,13 +161,15 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
               value={url}
               onChange={(e) => {
                 setUrl(e.target.value);
+                setUrlError(null);
                 setDuplicateReelId(null);
               }}
               placeholder="Paste Instagram Reel URL (Press 'N' to focus)"
               style={{
                 width: '100%',
                 padding: 'var(--space-3) 2.5rem var(--space-3) var(--space-3)',
-                fontSize: 'var(--font-size-sm)'
+                fontSize: 'var(--font-size-sm)',
+                borderColor: urlError ? 'var(--color-danger)' : undefined
               }}
               disabled={isSubmitting}
             />
@@ -173,6 +202,12 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             <span>{isSubmitting ? 'Cataloging...' : 'Save Reel'}</span>
           </button>
         </div>
+
+        {urlError && (
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-danger)', marginTop: '-4px' }}>
+            {urlError}
+          </div>
+        )}
 
         {/* Duplicate Reel notification ledger row */}
         {duplicateReelId && (

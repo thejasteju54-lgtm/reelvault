@@ -53,6 +53,7 @@ export interface CreateReelInput {
   notes?: string;
   categoryId?: string;
   tags?: string[];
+  website?: string;
 }
 
 export interface UpdateReelInput {

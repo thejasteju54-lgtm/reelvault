@@ -1,0 +1,22 @@
+{
+  "name": "ReelVault",
+  "short_name": "ReelVault",
+  "description": "Personal Instagram Reel Bookmark & Knowledge Management Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#131312",
+  "theme_color": "#c84b31",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

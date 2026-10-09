@@ -3,9 +3,8 @@ import { requireAuth, AuthenticatedRequest } from '../middleware/auth.js';
 import { getVaultStats, exportVaultData } from '../services/reels.service.js';
 
 const router = Router();
-router.use(requireAuth);
 
-router.get('/stats', (req: AuthenticatedRequest, res: Response, next) => {
+router.get('/stats', requireAuth, (req: AuthenticatedRequest, res: Response, next) => {
   try {
     const stats = getVaultStats(req.user!.userId);
     res.status(200).json({
@@ -17,7 +16,7 @@ router.get('/stats', (req: AuthenticatedRequest, res: Response, next) => {
   }
 });
 
-router.get('/export', (req: AuthenticatedRequest, res: Response, next) => {
+router.get('/export', requireAuth, (req: AuthenticatedRequest, res: Response, next) => {
   try {
     const format = req.query.format === 'csv' ? 'csv' : 'json';
     const exported = exportVaultData(req.user!.userId, format);

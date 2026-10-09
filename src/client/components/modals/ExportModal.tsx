@@ -4,6 +4,8 @@ import { Modal } from '../ui/Modal.js';
 import { api } from '../../services/api.js';
 import { useToast } from '../ui/Toast.js';
 
+import { analytics } from '../../services/analytics.js';
+
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,6 +19,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setIsExporting(true);
     try {
       await api.export.download(format);
+      analytics.trackEvent('export_triggered', { format });
       showToast(`Exported vault as ${format.toUpperCase()}`, 'success');
       onClose();
     } catch (err: unknown) {

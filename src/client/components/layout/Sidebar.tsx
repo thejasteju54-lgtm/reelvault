@@ -11,11 +11,13 @@ import {
   LogOut,
   Sun,
   Moon,
-  Layers
+  Layers,
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
 import { User, VaultStats } from '../../types/index.js';
 
-export type ActiveTab = 'dashboard' | 'saved' | 'favorites' | 'unwatched' | 'archive' | 'tags';
+export type ActiveTab = 'dashboard' | 'saved' | 'favorites' | 'unwatched' | 'archive' | 'tags' | 'privacy' | 'terms' | 'not-found';
 
 interface SidebarProps {
   currentTab: ActiveTab;
@@ -28,6 +30,9 @@ interface SidebarProps {
   onLogout: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  onNavigateToPrivacy?: () => void;
+  onNavigateToTerms?: () => void;
+  onResetCookieConsent?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -40,7 +45,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenShortcuts,
   onLogout,
   theme,
-  onToggleTheme
+  onToggleTheme,
+  onNavigateToPrivacy,
+  onNavigateToTerms,
+  onResetCookieConsent
 }) => {
   const navItems = [
     { id: 'dashboard' as ActiveTab, label: 'Dashboard', icon: LayoutDashboard },
@@ -59,8 +67,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           alignItems: 'center',
           gap: 'var(--space-3)',
           paddingBottom: 'var(--space-5)',
-          borderBottom: '1px solid var(--border-subtle)'
+          borderBottom: '1px solid var(--border-subtle)',
+          cursor: 'pointer'
         }}
+        onClick={() => onSelectTab('dashboard')}
       >
         <div
           style={{
@@ -95,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               fontFamily: 'var(--font-mono)'
             }}
           >
-            v1.0 • Archival
+            v1.0 • Archival Ledger
           </span>
         </div>
       </div>
@@ -163,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           display: 'flex',
           flexDirection: 'column',
           gap: 'var(--space-1)',
-          paddingTop: 'var(--space-4)',
+          paddingTop: 'var(--space-3)',
           borderTop: '1px solid var(--border-subtle)'
         }}
       >
@@ -174,12 +184,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-3)',
-            padding: 'var(--space-2) var(--space-3)',
+            padding: 'var(--space-1) var(--space-3)',
             borderRadius: 'var(--radius)',
             fontSize: 'var(--font-size-xs)'
           }}
         >
-          <BarChart2 size={15} />
+          <BarChart2 size={14} />
           <span>Vault Statistics</span>
         </button>
 
@@ -190,12 +200,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-3)',
-            padding: 'var(--space-2) var(--space-3)',
+            padding: 'var(--space-1) var(--space-3)',
             borderRadius: 'var(--radius)',
             fontSize: 'var(--font-size-xs)'
           }}
         >
-          <Download size={15} />
+          <Download size={14} />
           <span>Export Vault</span>
         </button>
 
@@ -206,12 +216,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-3)',
-            padding: 'var(--space-2) var(--space-3)',
+            padding: 'var(--space-1) var(--space-3)',
             borderRadius: 'var(--radius)',
             fontSize: 'var(--font-size-xs)'
           }}
         >
-          <Keyboard size={15} />
+          <Keyboard size={14} />
           <span>Shortcuts (?)</span>
         </button>
 
@@ -222,13 +232,77 @@ export const Sidebar: React.FC<SidebarProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-3)',
-            padding: 'var(--space-2) var(--space-3)',
+            padding: 'var(--space-1) var(--space-3)',
             borderRadius: 'var(--radius)',
             fontSize: 'var(--font-size-xs)'
           }}
         >
-          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           <span>{theme === 'dark' ? 'Light Appearance' : 'Dark Appearance'}</span>
+        </button>
+      </div>
+
+      {/* Compliance & Legal Footer (Items 1, 2, 5) */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          paddingTop: 'var(--space-2)',
+          marginTop: 'var(--space-2)',
+          borderTop: '1px solid var(--border-subtle)',
+          fontSize: 'var(--font-size-xs)',
+          color: 'var(--text-muted)'
+        }}
+      >
+        <button
+          onClick={onNavigateToPrivacy}
+          className="btn-ghost"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            padding: '2px var(--space-2)',
+            fontSize: 'var(--font-size-xs)',
+            justifyContent: 'flex-start',
+            color: currentTab === 'privacy' ? 'var(--color-primary)' : 'var(--text-muted)'
+          }}
+        >
+          <ShieldCheck size={13} />
+          <span>Privacy Policy</span>
+        </button>
+
+        <button
+          onClick={onNavigateToTerms}
+          className="btn-ghost"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            padding: '2px var(--space-2)',
+            fontSize: 'var(--font-size-xs)',
+            justifyContent: 'flex-start',
+            color: currentTab === 'terms' ? 'var(--color-primary)' : 'var(--text-muted)'
+          }}
+        >
+          <FileText size={13} />
+          <span>Terms of Service</span>
+        </button>
+
+        <button
+          onClick={onResetCookieConsent}
+          className="btn-ghost"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            padding: '2px var(--space-2)',
+            fontSize: 'var(--font-size-xs)',
+            justifyContent: 'flex-start',
+            color: 'var(--text-muted)'
+          }}
+        >
+          <span>Manage Cookies</span>
         </button>
       </div>
 
@@ -239,16 +313,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: 'var(--space-3) var(--space-2) 0 var(--space-2)',
-            marginTop: 'var(--space-3)',
+            padding: 'var(--space-2) var(--space-2) 0 var(--space-2)',
+            marginTop: 'var(--space-2)',
             borderTop: '1px solid var(--border-subtle)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
             <div
               style={{
-                width: 26,
-                height: 26,
+                width: 24,
+                height: 24,
                 borderRadius: 'var(--radius)',
                 backgroundColor: 'var(--bg-surface-active)',
                 color: 'var(--text-primary)',
@@ -286,7 +360,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             aria-label="Sign out"
             title="Sign out"
           >
-            <LogOut size={15} />
+            <LogOut size={14} />
           </button>
         </div>
       )}

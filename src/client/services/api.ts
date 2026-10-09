@@ -64,19 +64,19 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   auth: {
-    async register(email: string, password: string, displayName?: string): Promise<AuthResponseData> {
+    async register(email: string, password: string, displayName?: string, website?: string): Promise<AuthResponseData> {
       const res = await request<{ data: AuthResponseData }>('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ email, password, displayName })
+        body: JSON.stringify({ email, password, displayName, website })
       });
       setStoredToken(res.data.token);
       return res.data;
     },
 
-    async login(email: string, password: string): Promise<AuthResponseData> {
+    async login(email: string, password: string, website?: string): Promise<AuthResponseData> {
       const res = await request<{ data: AuthResponseData }>('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, website })
       });
       setStoredToken(res.data.token);
       return res.data;
