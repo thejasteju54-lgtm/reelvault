@@ -378,8 +378,29 @@ CMD ["node", "dist/server/index.js"]
 - [ ] **AI Auto-Tagging:** Optional Gemini 2.5 integration to extract concepts and auto-tag reel transcripts.
 - [ ] **Custom Collections:** Group reels into shareable thematic collections or playlists.
 
+## 📚 Documentation & Specifications Index
+
+ReelVault features complete, version-controlled architecture, design, and product specifications:
+
+| Document | Description |
+| :--- | :--- |
+| **[docs/PRD.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/PRD.md)** | Product Requirements Document, core value proposition, ICP, user stories, and out-of-scope boundaries |
+| **[docs/ARCHITECTURE.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/ARCHITECTURE.md)** | System architecture, locked tech stack, complete SQLite schema DDL, indexes, and multi-environment matrix |
+| **[docs/BRAND.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/BRAND.md)** | Brand identity, emotional voice, tone principles, typography, and color palette tokens |
+| **[docs/DESIGN_SYSTEM.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/DESIGN_SYSTEM.md)** | Design tokens, type scale, spacing, buttons, modals, and WCAG AA accessibility standards |
+| **[docs/TASKS.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/TASKS.md)** | Milestone-grouped task backlog with acceptance criteria, dependencies, and real-time status tracking |
+| **[docs/CONTRIBUTING.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/CONTRIBUTING.md)** | Contribution standards, Conventional Commits format, and pull request workflow |
+| **[docs/CHANGELOG.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/CHANGELOG.md)** | Chronological version history following Keep a Changelog and Semantic Versioning |
+| **[docs/RELEASE_CHECKLIST.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/RELEASE_CHECKLIST.md)** | Pre-flight release verification checklist covering automated tests, secrets, and deployment |
+| **[docs/API.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/API.md)** | REST API specification, request/response contracts, and error code catalogue |
+| **[docs/SECURITY.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/SECURITY.md)** | Security architecture, scrypt password hashing, IDOR isolation, and rate-limiting contracts |
+| **[docs/DATABASE.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/DATABASE.md)** | Detailed relational schema, entity relationships, and composite performance indexes |
+| **[docs/TESTING.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/docs/TESTING.md)** | Multi-layer test strategy, unit tests, integration tests, and live E2E verification |
+| **[AGENTS.md](file:///c:/Users/Thejas/OneDrive/Desktop/reelvault-new/AGENTS.md)** | Operational guidelines, coding rules, and standing instructions for Antigravity AI agents |
+
 ---
 
 ## 📄 License
 
 Distributed under the **MIT License**. Crafted with clean software engineering, zero external bloat, and modern design principles.
+

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError, DuplicateReelError } from '../services/reels.service.js';
 import { AuthError } from '../services/auth.service.js';
+import { logger } from '../utils/logger.js';
 
 export function errorHandler(
   err: unknown,
@@ -47,7 +48,7 @@ export function errorHandler(
 
   // Handle generic uncaught errors
   const errMessage = err instanceof Error ? err.message : 'An unexpected internal error occurred.';
-  console.error('[Unhandled Server Error]:', err);
+  logger.error('Unhandled Server Error', err);
   res.status(500).json({
     success: false,
     error: {
