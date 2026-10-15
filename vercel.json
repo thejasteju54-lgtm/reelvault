@@ -2,6 +2,14 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/client",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs22.x"
+    },
+    "api/index.ts": {
+      "runtime": "nodejs22.x"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -28,7 +36,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-src 'self' https://www.instagram.com https://*.instagram.com https://*.cdninstagram.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
         }
       ]
     }

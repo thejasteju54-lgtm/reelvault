@@ -45,7 +45,38 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     window.dispatchEvent(new Event('auth:unauthorized'));
   }
 
-  const data = await response.json();
+  let data: any = null;
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+  } else {
+    try {
+      const rawText = await response.text();
+      data = {
+        success: false,
+        error: {
+          code: `HTTP_${response.status}`,
+          message: rawText && rawText.length < 300 ? rawText.trim() : `Server error (HTTP ${response.status}).`
+        }
+      };
+    } catch {
+      data = null;
+    }
+  }
+
+  if (!data) {
+    data = {
+      success: false,
+      error: {
+        code: `HTTP_${response.status}`,
+        message: `Unexpected server response (HTTP ${response.status}). Please try again.`
+      }
+    };
+  }
 
   if (!response.ok || !data.success) {
     const error = new Error(data.error?.message || 'An unexpected error occurred.') as Error & {

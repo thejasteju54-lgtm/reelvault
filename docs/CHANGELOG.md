@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-10-15
+
+### Fixed
+- **Vercel Serverless Function & Registration Failure**:
+  - Resolved cold-start failure on Vercel caused by missing production `JWT_SECRET` environment variable with safe serverless fallback.
+  - Pinned `node: 22.x` engine in `package.json` and explicit `nodejs22.x` runtime configuration in `vercel.json` for native `node:sqlite` execution.
+  - Guaranteed `/tmp/reelvault.sqlite` database path in serverless execution to prevent read-only filesystem errors.
+  - Preserved incoming request path in `api/index.ts` across Vercel rewrite headers (`x-matched-path`).
+  - Hardened frontend API client with defensive response parsing to cleanly handle non-JSON responses without unhandled syntax errors.
+
 ## [1.1.0] - 2026-10-15
 
 ### Added

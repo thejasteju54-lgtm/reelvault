@@ -14,7 +14,8 @@ export function initDatabase(config: DatabaseConfig = {}): DatabaseSync {
     return dbInstance;
   }
 
-  const defaultPath = process.env.VERCEL ? '/tmp/reelvault.sqlite' : './data/reelvault.sqlite';
+  const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+  const defaultPath = isVercel ? '/tmp/reelvault.sqlite' : './data/reelvault.sqlite';
   const dbPath = config.dbPath || process.env.DATABASE_PATH || defaultPath;
 
   if (dbPath !== ':memory:') {
@@ -33,7 +34,7 @@ export function initDatabase(config: DatabaseConfig = {}): DatabaseSync {
   // Configure SQLite for high performance and integrity
   try {
     db.exec('PRAGMA foreign_keys = ON;');
-    if (dbPath !== ':memory:' && !process.env.VERCEL) {
+    if (dbPath !== ':memory:' && !isVercel) {
       db.exec('PRAGMA journal_mode = WAL;');
       db.exec('PRAGMA synchronous = NORMAL;');
     }

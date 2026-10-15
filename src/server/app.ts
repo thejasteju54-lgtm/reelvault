@@ -108,7 +108,7 @@ export function createApp(): express.Application {
   app.use('/api', statsRoutes);
 
   // 404 for unrecognized API endpoints
-  app.all('/api/*', (_req, res) => {
+  app.all(['/api', '/api/*'], (_req, res) => {
     res.status(404).json({
       success: false,
       error: {

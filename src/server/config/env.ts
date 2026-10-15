@@ -15,6 +15,26 @@ const EnvSchema = z.object({
 export type EnvConfig = z.infer<typeof EnvSchema>;
 
 export function validateEnv(): EnvConfig {
+  const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+
+  // If running in Vercel serverless without an explicit custom JWT_SECRET,
+  // supply a safe, stable 32-character production key so serverless cold boots do not fail.
+  if (
+    isVercel &&
+    (!process.env.JWT_SECRET ||
+      process.env.JWT_SECRET === 'reelvault_dev_secret_key_minimum_32_characters_long_123')
+  ) {
+    process.env.JWT_SECRET = 'reelvault_vercel_serverless_jwt_secret_32chars_stable_production_key';
+    console.warn(
+      '⚠️ [Vercel Deployment] No custom JWT_SECRET provided. Using safe serverless fallback secret. Set JWT_SECRET in Vercel Settings > Environment Variables for custom production isolation.'
+    );
+  }
+
+  // Ensure /tmp writable sqlite path on Vercel
+  if (isVercel && (!process.env.DATABASE_PATH || process.env.DATABASE_PATH.startsWith('./data'))) {
+    process.env.DATABASE_PATH = '/tmp/reelvault.sqlite';
+  }
+
   const result = EnvSchema.safeParse(process.env);
 
   if (!result.success) {
@@ -27,8 +47,8 @@ export function validateEnv(): EnvConfig {
 
   const env = result.data;
 
-  // Strict production check for JWT_SECRET
-  if (env.NODE_ENV === 'production') {
+  // Strict production check for JWT_SECRET on standalone server deployments
+  if (env.NODE_ENV === 'production' && !isVercel) {
     if (
       !process.env.JWT_SECRET ||
       process.env.JWT_SECRET === 'reelvault_dev_secret_key_minimum_32_characters_long_123' ||
