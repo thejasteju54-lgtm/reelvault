@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-10-15
+
+### Added
+- **Visual Cover Images & Video Frames**:
+  - Full support for custom high-resolution cover image URLs when saving and editing reels.
+  - Interactive 1-click Instagram video frame player embeds directly inside cards and the detail modal.
+  - View mode switcher in FilterBar between compact "Card View" and "Live Frames" mode across the entire dashboard.
+  - Category-accented archival poster fallbacks when no custom cover image is assigned.
+  - Updated Helmet Content Security Policy with `frame-src` for `instagram.com` to allow official embed players.
+  - Unit and API test assertions for cover image creation and updates.
+
 ## [1.0.0] - 2026-10-09
 
 ### Added

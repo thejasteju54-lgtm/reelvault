@@ -74,15 +74,20 @@
 ## ✨ Key Features
 
 - **⚡ Sub-Second Quick Save:** Instant validation, stripping of tracking tokens (`?utm_source=...`, `?igsh=...`), and canonical normalization (`https://www.instagram.com/reel/<shortcode>/`).
+- **🖼️ Visual Cover Images & Video Frames:**
+  - High-resolution custom cover image support with live preview and instant editing.
+  - 1-click official Instagram video frame player embeds directly inside cards and the detail modal.
+  - Dual view modes: switch instantly between compact **Card View** and **Live Frames** across the entire vault.
+  - Archival fallback posters with category color accents when no custom cover is attached.
 - **🛡️ Strict Duplicate Detection:** Enforced at both application and database level (`UNIQUE(user_id, instagram_shortcode)`). Never save the same Reel twice.
 - **🔍 Multi-Field Server-Side Search:** Instant search across titles, personal notes, tags, creator usernames, and URLs (Shortcut: **`/`**).
 - **🏷️ Composable Organization:** Filter simultaneously by Watch Status (*All, Watched, Unwatched*), Favorites (*Starred*), Archive, Custom/Default Categories, and Tags.
 - **⌨️ Keyboard-First Power Shortcuts:**
-  - `N` — Focus Quick Save URL bar
-  - `/` — Focus Search bar
-  - `G then D / S / F / A / T` — Navigate tabs (*Dashboard, Saved, Favorites, Archive, Tags*)
-  - `?` — Toggle Shortcuts modal
-  - `Esc` — Dismiss modals / clear search
+  - `N` - Focus Quick Save URL bar
+  - `/` - Focus Search bar
+  - `G then D / S / F / A / T` - Navigate tabs (*Dashboard, Saved, Favorites, Archive, Tags*)
+  - `?` - Toggle Shortcuts modal
+  - `Esc` - Dismiss modals / clear search
 - **📊 Vault Metrics & Analytics:** View total saved count, completion percentage, favorites count, and tag distribution.
 - **📤 Zero Vendor Lock-in Export:** Instant download of your entire library as structured **JSON** or spreadsheet-ready **CSV**.
 - **🌗 Minimalist SaaS Aesthetic:** Tailored Dark and Light themes inspired by Linear, Raycast, and Arc with fluid micro-interactions and zero layout shifts.
@@ -157,6 +162,8 @@ erDiagram
         string canonical_url
         string instagram_shortcode UK
         string title
+        string creator_username
+        string thumbnail_url
         string notes
         string category_id FK
         boolean is_favorite
@@ -211,10 +218,10 @@ All protected routes require `Authorization: Bearer <TOKEN>`.
 ### Reels Management Endpoints
 | Method | Endpoint | Description | Payload / Query | Response |
 |---|---|---|---|---|
-| `POST` | `/api/reels` | Quick Save Instagram Reel | `{ url, title?, notes?, categoryId?, tags? }` | `201 Created` / `409 Conflict` |
+| `POST` | `/api/reels` | Quick Save Instagram Reel | `{ url, title?, notes?, categoryId?, tags?, thumbnailUrl? }` | `201 Created` / `409 Conflict` |
 | `GET` | `/api/reels` | Multi-field search & composable filter | `?q=&status=&favorite=&archived=&categoryId=&tag=&sort=&limit=` | `200 OK` (Reels + Pagination) |
 | `GET` | `/api/reels/:id` | Get single reel by ID | *None* | `200 OK` / `404 Not Found` |
-| `PATCH` | `/api/reels/:id` | Update metadata, notes, tags | `{ title?, notes?, categoryId?, tags? }` | `200 OK` (Updated Reel) |
+| `PATCH` | `/api/reels/:id` | Update metadata, notes, tags, cover | `{ title?, notes?, categoryId?, tags?, thumbnailUrl? }` | `200 OK` (Updated Reel) |
 | `DELETE` | `/api/reels/:id` | Permanently remove reel | *None* | `200 OK` (`{ id }`) |
 | `POST` | `/api/reels/:id/favorite` | Toggle favorite star | *None* | `200 OK` (`isFavorite: boolean`) |
 | `POST` | `/api/reels/:id/watched` | Toggle watched status | *None* | `200 OK` (`isWatched: boolean`) |
@@ -314,7 +321,7 @@ npm run test:e2e        # Live end-to-end verification against running server
    ```bash
    npm run dev
    ```
-   *Express server starts on port `4000`, and Vite React client starts on port `5173` with automatic API proxying.*
+   *Express server starts on port `4000`, and Vite React client starts on port `3000` with automatic `/api` proxying.*
 
 ---
 

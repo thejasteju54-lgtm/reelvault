@@ -39,6 +39,7 @@ export function createApp(): express.Application {
           fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
           imgSrc: ["'self'", "data:", "https:", "blob:"],
           connectSrc: ["'self'", "https:"],
+          frameSrc: ["'self'", "https://www.instagram.com", "https://*.instagram.com", "https://*.cdninstagram.com"],
           frameAncestors: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"]

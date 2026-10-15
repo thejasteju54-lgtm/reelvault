@@ -115,14 +115,15 @@ export function saveReel(userId: string, input: CreateReelInput): Reel {
   const cleanTitle = input.title?.trim() || null;
   const cleanNotes = input.notes?.trim() || null;
   const categoryId = input.categoryId?.trim() || null;
+  const cleanThumbnailUrl = input.thumbnailUrl !== undefined ? (input.thumbnailUrl?.trim() || null) : null;
 
   return runTransaction((txDb) => {
     try {
       const insertStmt = txDb.prepare(`
         INSERT INTO reels (
           id, user_id, instagram_url, canonical_url, instagram_shortcode,
-          title, notes, category_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          title, notes, category_id, thumbnail_url
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       insertStmt.run(
         reelId,
@@ -132,7 +133,8 @@ export function saveReel(userId: string, input: CreateReelInput): Reel {
         parsed.shortcode!,
         cleanTitle,
         cleanNotes,
-        categoryId
+        categoryId,
+        cleanThumbnailUrl
       );
     } catch (err: unknown) {
       // Catch race-condition duplicate constraint violation
@@ -313,6 +315,7 @@ export function updateReel(userId: string, reelId: string, input: UpdateReelInpu
         title = COALESCE(?, title),
         notes = ?,
         category_id = ?,
+        thumbnail_url = ?,
         updated_at = datetime('now')
       WHERE id = ? AND user_id = ?
     `);
@@ -321,6 +324,7 @@ export function updateReel(userId: string, reelId: string, input: UpdateReelInpu
       input.title !== undefined ? input.title.trim() || null : existing.title,
       input.notes !== undefined ? input.notes.trim() || null : existing.notes,
       input.categoryId !== undefined ? input.categoryId : existing.categoryId,
+      input.thumbnailUrl !== undefined ? (input.thumbnailUrl?.trim() || null) : existing.thumbnailUrl,
       reelId,
       userId
     );

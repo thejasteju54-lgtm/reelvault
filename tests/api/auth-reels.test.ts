@@ -102,7 +102,8 @@ test('Reels API - Save, Duplicate Prevention, Search, Filter, and Toggles', asyn
       url: 'https://www.instagram.com/reel/C3_aBcDeF/?utm_source=ig_web_copy_link',
       title: 'Full Stack Node 26 Masterclass',
       notes: 'Must watch section on native SQLite and architecture',
-      tags: ['NodeJS', 'TypeScript', 'Backend']
+      tags: ['NodeJS', 'TypeScript', 'Backend'],
+      thumbnailUrl: 'https://example.com/cover.jpg'
     })
   });
   assert.equal(saveRes.status, 201);
@@ -110,8 +111,21 @@ test('Reels API - Save, Duplicate Prevention, Search, Filter, and Toggles', asyn
   assert.equal(saveBody.success, true);
   assert.equal(saveBody.data.instagramShortcode, 'C3_aBcDeF');
   assert.equal(saveBody.data.canonicalUrl, 'https://www.instagram.com/reel/C3_aBcDeF/');
+  assert.equal(saveBody.data.thumbnailUrl, 'https://example.com/cover.jpg');
   assert.deepEqual(saveBody.data.tags, ['backend', 'nodejs', 'typescript']);
   const reelId = saveBody.data.id;
+
+  // 1b. Update thumbnailUrl via PATCH
+  const patchRes = await fetch(`${baseUrl}/api/reels/${reelId}`, {
+    method: 'PATCH',
+    headers: authHeaders,
+    body: JSON.stringify({
+      thumbnailUrl: 'https://example.com/updated-cover.jpg'
+    })
+  });
+  assert.equal(patchRes.status, 200);
+  const patchBody = await patchRes.json();
+  assert.equal(patchBody.data.thumbnailUrl, 'https://example.com/updated-cover.jpg');
 
   // 2. Duplicate Prevention - attempt saving same reel again
   const dupRes = await fetch(`${baseUrl}/api/reels`, {

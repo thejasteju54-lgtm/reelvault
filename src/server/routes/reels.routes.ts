@@ -24,6 +24,7 @@ const CreateReelSchema = z.object({
   notes: z.string().max(5000).optional(),
   categoryId: z.string().uuid().nullable().optional(),
   tags: z.array(z.string().max(50)).optional(),
+  thumbnailUrl: z.string().max(2000).nullable().optional(),
   website: z.string().max(0, 'Bot activity detected (honeypot triggered).').optional()
 });
 
@@ -31,7 +32,8 @@ const UpdateReelSchema = z.object({
   title: z.string().max(255).optional(),
   notes: z.string().max(5000).optional(),
   categoryId: z.string().uuid().nullable().optional(),
-  tags: z.array(z.string().max(50)).optional()
+  tags: z.array(z.string().max(50)).optional(),
+  thumbnailUrl: z.string().max(2000).nullable().optional()
 });
 
 const QueryReelsSchema = z.object({

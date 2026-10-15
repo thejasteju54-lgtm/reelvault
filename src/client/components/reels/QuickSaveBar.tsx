@@ -11,6 +11,8 @@ interface QuickSaveBarProps {
     notes?: string;
     categoryId?: string;
     tags?: string[];
+    thumbnailUrl?: string;
+    website?: string;
   }) => Promise<Reel>;
   onSelectReel: (reelId: string) => void;
 }
@@ -26,6 +28,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
   const [categoryId, setCategoryId] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [duplicateReelId, setDuplicateReelId] = useState<string | null>(null);
@@ -100,6 +103,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
         notes: notes.trim() || undefined,
         categoryId: categoryId || undefined,
         tags: tags.length > 0 ? tags : undefined,
+        thumbnailUrl: thumbnailUrl.trim() || undefined,
         website: honeypot || undefined
       });
 
@@ -110,6 +114,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
       setNotes('');
       setCategoryId('');
       setTags([]);
+      setThumbnailUrl('');
       setIsExpanded(false);
 
       // Keep focus in input for rapid batch saving
@@ -261,7 +266,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
               padding: 'var(--space-1) var(--space-2)'
             }}
           >
-            <span>{isExpanded ? 'Hide archive fields' : 'Add metadata (title, category, tags, notes)'}</span>
+            <span>{isExpanded ? 'Hide archive fields' : 'Add metadata (title, category, tags, cover image, notes)'}</span>
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </div>
@@ -298,6 +303,14 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
                 </option>
               ))}
             </select>
+
+            <input
+              type="url"
+              value={thumbnailUrl}
+              onChange={(e) => setThumbnailUrl(e.target.value)}
+              placeholder="Cover image URL (optional)"
+              style={{ padding: 'var(--space-2) var(--space-3)' }}
+            />
 
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
               <input

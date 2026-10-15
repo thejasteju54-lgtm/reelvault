@@ -8,7 +8,10 @@ import {
   Copy,
   Archive,
   ArchiveRestore,
-  Trash2
+  Trash2,
+  Play,
+  X as CloseIcon,
+  Image as ImageIcon
 } from 'lucide-react';
 import { InstagramIcon } from '../ui/InstagramIcon.js';
 import { Reel } from '../../types/index.js';
@@ -16,6 +19,7 @@ import { useToast } from '../ui/Toast.js';
 
 interface ReelCardProps {
   reel: Reel;
+  isEmbedMode?: boolean;
   onOpenDetails: (reel: Reel) => void;
   onToggleFavorite: (reelId: string) => void;
   onToggleWatched: (reelId: string) => void;
@@ -26,6 +30,7 @@ interface ReelCardProps {
 
 export const ReelCard: React.FC<ReelCardProps> = ({
   reel,
+  isEmbedMode = false,
   onOpenDetails,
   onToggleFavorite,
   onToggleWatched,
@@ -34,7 +39,11 @@ export const ReelCard: React.FC<ReelCardProps> = ({
   onSelectTag
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [showEmbed, setShowEmbed] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { showToast } = useToast();
+
+  const isFrameActive = isEmbedMode || showEmbed;
 
   const handleCopyUrl = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -68,111 +77,206 @@ export const ReelCard: React.FC<ReelCardProps> = ({
 
   return (
     <article className="reel-card" onClick={() => onOpenDetails(reel)}>
-      {/* Thumbnail area with fallback */}
-      <div className="reel-card-thumbnail">
-        {reel.thumbnailUrl ? (
-          <img
-            src={reel.thumbnailUrl}
-            alt={reel.title ? `Preview for ${reel.title}` : `Reel preview for shortcode ${reel.instagramShortcode}`}
-            width={320}
-            height={180}
-            loading="lazy"
-          />
+      {/* Thumbnail / Cover area with Live Video Frame or Image */}
+      <div className={`reel-card-thumbnail ${isFrameActive ? 'has-embed' : ''}`}>
+        {isFrameActive ? (
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <iframe
+              src={`https://www.instagram.com/reel/${reel.instagramShortcode}/embed/`}
+              title={reel.title || `Instagram Reel ${reel.instagramShortcode}`}
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              scrolling="no"
+              allow="encrypted-media"
+              style={{ border: 'none', width: '100%', height: '100%', display: 'block' }}
+            />
+            {!isEmbedMode && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEmbed(false);
+                }}
+                className="btn-icon"
+                style={{
+                  position: 'absolute',
+                  top: 'var(--space-2)',
+                  left: 'var(--space-2)',
+                  backgroundColor: 'rgba(19, 19, 18, 0.85)',
+                  color: '#ffffff',
+                  padding: 'var(--space-1)',
+                  zIndex: 10
+                }}
+                title="Collapse Video Frame"
+              >
+                <CloseIcon size={14} />
+              </button>
+            )}
+          </div>
+        ) : reel.thumbnailUrl && !imageError ? (
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <img
+              src={reel.thumbnailUrl}
+              alt={reel.title ? `Preview for ${reel.title}` : `Reel preview for shortcode ${reel.instagramShortcode}`}
+              width={320}
+              height={180}
+              loading="lazy"
+              onError={() => setImageError(true)}
+            />
+            {/* Quick Frame Preview Button overlay */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEmbed(true);
+              }}
+              className="btn-icon"
+              style={{
+                position: 'absolute',
+                bottom: 'var(--space-2)',
+                right: 'var(--space-2)',
+                backgroundColor: 'rgba(19, 19, 18, 0.85)',
+                color: '#ffffff',
+                padding: 'var(--space-1) var(--space-2)',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--font-size-xs)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)'
+              }}
+              title="Preview Live Reel Video Frame"
+            >
+              <Play size={11} fill="#ffffff" />
+              <span>Frame</span>
+            </button>
+          </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'var(--space-2)',
-              color: 'var(--text-muted)'
-            }}
-          >
+          /* Archival Poster with Category Accent & Frame Trigger */
+          <div className="reel-poster-cover">
+            {/* Category color top strip */}
             <div
               style={{
-                width: 40,
-                height: 40,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                backgroundColor: reel.categoryColor || 'var(--color-primary)'
+              }}
+            />
+            <div
+              style={{
+                width: 42,
+                height: 42,
                 borderRadius: 'var(--radius)',
-                backgroundColor: 'var(--bg-surface-active)',
+                backgroundColor: 'var(--bg-surface)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'var(--color-primary)'
+                color: 'var(--color-primary)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
               }}
             >
-              <InstagramIcon size={22} />
+              <InstagramIcon size={24} />
             </div>
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 'var(--font-size-xs)',
-                fontWeight: 500
+                fontWeight: 600,
+                color: 'var(--text-primary)'
               }}
             >
               {reel.instagramShortcode}
             </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEmbed(true);
+              }}
+              className="btn btn-secondary"
+              style={{
+                fontSize: 'var(--font-size-xs)',
+                padding: '2px var(--space-2)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-1)',
+                marginTop: 'var(--space-1)'
+              }}
+              title="Load live reel video frame"
+            >
+              <Play size={11} fill="currentColor" />
+              <span>Load Video Frame</span>
+            </button>
           </div>
         )}
 
-        {/* Top Floating Badges: Solid Flat Surfaces, No Blur */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 'var(--space-2)',
-            left: 'var(--space-2)',
-            display: 'flex',
-            gap: 'var(--space-1)'
-          }}
-        >
-          {reel.categoryName && (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-muted)'
-              }}
-            >
-              {reel.categoryName}
-            </span>
-          )}
+        {/* Top Floating Badges (hidden when frame is active to not block player) */}
+        {!isFrameActive && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 'var(--space-2)',
+              left: 'var(--space-2)',
+              display: 'flex',
+              gap: 'var(--space-1)',
+              zIndex: 5
+            }}
+          >
+            {reel.categoryName && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-muted)'
+                }}
+              >
+                {reel.categoryName}
+              </span>
+            )}
 
-          {reel.isWatched && (
-            <span
-              className="badge"
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--color-success)',
-                borderColor: 'var(--border-muted)'
-              }}
-            >
-              <CheckCircle size={10} />
-              <span>Watched</span>
-            </span>
-          )}
-        </div>
+            {reel.isWatched && (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  color: 'var(--color-success)',
+                  borderColor: 'var(--border-muted)'
+                }}
+              >
+                <CheckCircle size={10} />
+                <span>Watched</span>
+              </span>
+            )}
+          </div>
+        )}
 
-        {/* Favorite Star Top Right: Solid Dark Surface, No Blur */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite(reel.id);
-          }}
-          className="btn-icon"
-          style={{
-            position: 'absolute',
-            top: 'var(--space-2)',
-            right: 'var(--space-2)',
-            backgroundColor: 'rgba(19, 19, 18, 0.85)',
-            color: reel.isFavorite ? 'var(--color-accent)' : '#ffffff',
-            padding: 'var(--space-1)'
-          }}
-          aria-label={reel.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          title={reel.isFavorite ? 'Favorited' : 'Favorite'}
-        >
-          <Star size={15} fill={reel.isFavorite ? 'var(--color-accent)' : 'none'} />
-        </button>
+        {/* Favorite Star Top Right: Solid Dark Surface */}
+        {!isFrameActive && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(reel.id);
+            }}
+            className="btn-icon"
+            style={{
+              position: 'absolute',
+              top: 'var(--space-2)',
+              right: 'var(--space-2)',
+              backgroundColor: 'rgba(19, 19, 18, 0.85)',
+              color: reel.isFavorite ? 'var(--color-accent)' : '#ffffff',
+              padding: 'var(--space-1)',
+              zIndex: 5
+            }}
+            aria-label={reel.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            title={reel.isFavorite ? 'Favorited' : 'Favorite'}
+          >
+            <Star size={15} fill={reel.isFavorite ? 'var(--color-accent)' : 'none'} />
+          </button>
+        )}
       </div>
 
       {/* Content Area */}
@@ -364,7 +468,26 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     }}
                   >
                     <Edit2 size={13} />
-                    <span>Edit Details</span>
+                    <span>Edit Details / Cover</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenu(false);
+                      setShowEmbed(!showEmbed);
+                    }}
+                    className="btn-ghost"
+                    style={{
+                      justifyContent: 'flex-start',
+                      width: '100%',
+                      padding: 'var(--space-1) var(--space-2)',
+                      fontSize: 'var(--font-size-xs)',
+                      gap: 'var(--space-2)'
+                    }}
+                  >
+                    <Play size={13} />
+                    <span>{showEmbed ? 'Hide Video Frame' : 'Show Video Frame'}</span>
                   </button>
 
                   <button

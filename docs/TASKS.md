@@ -48,9 +48,10 @@ This document maps all deliverables to verifiable tasks. When tasks finish, agen
 | **M3-04** | Foundational PRD | Author authoritative `docs/PRD.md` | Covers ICP, user pain, value prop, metrics, out-of-scope list | None | `[done]` |
 | **M3-05** | Brand Guidelines | Author authoritative `docs/BRAND.md` | Documents voice, tokens, dos and don'ts, typography | M1-07 | `[done]` |
 | **M3-06** | Design System Doc | Author authoritative `docs/DESIGN_SYSTEM.md` | Catalog design tokens, button states, touch targets, modal rules | M1-07 | `[done]` |
-| **M3-07** | GitHub Actions CI | Automated CI pipeline (`.github/workflows/ci.yml`) | Runs build, type check, and tests on push and PR to `main` | None | `[todo]` |
-| **M3-08** | Pluggable Error Tracker | Error logging and tracking abstraction | Scrubs PII; environment tagging; optional Sentry hook | M1-04 | `[todo]` |
-| **M3-09** | Release Checklist | `docs/RELEASE_CHECKLIST.md` & `docs/CHANGELOG.md` | Pre-flight release verification guide and version changelog | M3-07 | `[todo]` |
+| **M3-07** | GitHub Actions CI | Automated CI pipeline (`.github/workflows/ci.yml`) | Runs build, type check, and tests on push and PR to `main` | None | `[done]` |
+| **M3-08** | Pluggable Error Tracker | Error logging and tracking abstraction | Scrubs PII; environment tagging; optional Sentry hook | M1-04 | `[done]` |
+| **M3-09** | Release Checklist | `docs/RELEASE_CHECKLIST.md` & `docs/CHANGELOG.md` | Pre-flight release verification guide and version changelog | M3-07 | `[done]` |
+| **M3-10** | Cover Images & Video Frames | Visual card covers and live Instagram embed players | Custom thumbnail URL, live frame toggle, card view mode | M1-09, M1-10 | `[done]` |
 
 ---
 

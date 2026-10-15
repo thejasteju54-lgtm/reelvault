@@ -69,6 +69,7 @@ export const App: React.FC = () => {
   const [stats, setStats] = useState<VaultStats | null>(null);
   const [totalReelsCount, setTotalReelsCount] = useState(0);
   const [isLoadingReels, setIsLoadingReels] = useState(false);
+  const [isEmbedMode, setIsEmbedMode] = useState(false);
 
   // Filter state
   const [filters, setFilters] = useState<ReelQueryFilters>({
@@ -282,7 +283,7 @@ export const App: React.FC = () => {
 
   const handleUpdateReel = async (
     reelId: string,
-    updates: { title?: string; notes?: string; categoryId?: string | null; tags?: string[] }
+    updates: { title?: string; notes?: string; categoryId?: string | null; tags?: string[]; thumbnailUrl?: string | null }
   ) => {
     await api.reels.update(reelId, updates);
     await Promise.all([loadReels(), refreshMetadata()]);
@@ -492,6 +493,8 @@ export const App: React.FC = () => {
               categories={categories}
               availableTags={availableTags}
               totalResults={totalReelsCount}
+              isEmbedMode={isEmbedMode}
+              onToggleEmbedMode={() => setIsEmbedMode((prev) => !prev)}
             />
 
             {/* Reels Content Grid */}
@@ -551,6 +554,7 @@ export const App: React.FC = () => {
                   <ReelCard
                     key={reel.id}
                     reel={reel}
+                    isEmbedMode={isEmbedMode}
                     onOpenDetails={handleOpenDetailModal}
                     onToggleFavorite={handleToggleFavorite}
                     onToggleWatched={handleToggleWatched}

@@ -20,7 +20,7 @@ interface ReelDetailModalProps {
   isOpen: boolean;
   categories: Category[];
   onClose: () => void;
-  onUpdate: (reelId: string, updates: { title?: string; notes?: string; categoryId?: string | null; tags?: string[] }) => Promise<void>;
+  onUpdate: (reelId: string, updates: { title?: string; notes?: string; categoryId?: string | null; tags?: string[]; thumbnailUrl?: string | null }) => Promise<void>;
   onToggleFavorite: (reelId: string) => void;
   onToggleWatched: (reelId: string) => void;
   onToggleArchive: (reelId: string) => void;
@@ -43,6 +43,8 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
   const [notes, setNotes] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [viewEmbed, setViewEmbed] = useState(true);
   const [tagInput, setTagInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -54,6 +56,8 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
       setNotes(reel.notes || '');
       setCategoryId(reel.categoryId || '');
       setTags(reel.tags || []);
+      setThumbnailUrl(reel.thumbnailUrl || '');
+      setViewEmbed(true);
       setIsEditing(false);
     }
   }, [reel]);
@@ -88,7 +92,8 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
         title: title.trim() || undefined,
         notes: notes.trim() || undefined,
         categoryId: categoryId || null,
-        tags
+        tags,
+        thumbnailUrl: thumbnailUrl.trim() || null
       });
       showToast('Reel details updated', 'success');
       setIsEditing(false);
@@ -239,6 +244,45 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
 
             <div>
               <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
+                Cover / Thumbnail Image URL
+              </label>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <input
+                  type="url"
+                  value={thumbnailUrl}
+                  maxLength={2000}
+                  onChange={(e) => setThumbnailUrl(e.target.value)}
+                  placeholder="https://... direct image URL or cover snapshot"
+                  style={{ flex: 1, padding: 'var(--space-2) var(--space-3)' }}
+                />
+                {thumbnailUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setThumbnailUrl('')}
+                    className="btn btn-secondary"
+                    title="Remove cover image"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {thumbnailUrl && (
+                <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <img
+                    src={thumbnailUrl}
+                    alt="Cover preview"
+                    style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: 'var(--radius)', border: '1px solid var(--border-muted)' }}
+                    onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                  />
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                    Preview of custom cover image
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>
                 Curator Notes
               </label>
               <textarea
@@ -281,6 +325,94 @@ export const ReelDetailModal: React.FC<ReelDetailModalProps> = ({
                   Creator: @{reel.creatorUsername}
                 </p>
               )}
+            </div>
+
+            {/* Reel Video Frame / Cover Media Area */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              {viewEmbed ? (
+                <div className="reel-modal-embed">
+                  <iframe
+                    src={`https://www.instagram.com/reel/${reel.instagramShortcode}/embed/`}
+                    title={reel.title || `Reel ${reel.instagramShortcode}`}
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    scrolling="no"
+                    allow="encrypted-media"
+                    style={{ border: 'none', width: '100%', height: '100%' }}
+                  />
+                </div>
+              ) : reel.thumbnailUrl ? (
+                <div
+                  style={{
+                    width: '100%',
+                    maxHeight: '300px',
+                    borderRadius: 'var(--radius)',
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--bg-app)',
+                    border: '1px solid var(--border-subtle)',
+                    position: 'relative'
+                  }}
+                >
+                  <img
+                    src={reel.thumbnailUrl}
+                    alt={reel.title || reel.instagramShortcode}
+                    style={{ width: '100%', maxHeight: '300px', objectFit: 'cover' }}
+                  />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: 'var(--space-4)',
+                    backgroundColor: 'var(--bg-app)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius)',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)'
+                  }}
+                >
+                  <InstagramIcon size={28} />
+                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                    No custom cover image set. Switch to live video frame below to preview the reel.
+                  </p>
+                </div>
+              )}
+
+              {/* Media view toggles */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setViewEmbed(true)}
+                    className={`btn ${viewEmbed ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: 'var(--font-size-xs)', padding: '2px var(--space-2)' }}
+                  >
+                    Watch Video Frame
+                  </button>
+                  {reel.thumbnailUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setViewEmbed(false)}
+                      className={`btn ${!viewEmbed ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ fontSize: 'var(--font-size-xs)', padding: '2px var(--space-2)' }}
+                    >
+                      Cover Image
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="btn btn-secondary"
+                  style={{ fontSize: 'var(--font-size-xs)', padding: '2px var(--space-2)' }}
+                >
+                  Change Cover Image
+                </button>
+              </div>
             </div>
 
             {/* Notes Section: Archival Paper Card */}

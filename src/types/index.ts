@@ -53,6 +53,7 @@ export interface CreateReelInput {
   notes?: string;
   categoryId?: string;
   tags?: string[];
+  thumbnailUrl?: string | null;
   website?: string;
 }
 
@@ -61,6 +62,7 @@ export interface UpdateReelInput {
   notes?: string;
   categoryId?: string | null;
   tags?: string[];
+  thumbnailUrl?: string | null;
 }
 
 export interface ReelQueryFilters {

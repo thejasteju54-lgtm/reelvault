@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, LayoutGrid, Film } from 'lucide-react';
 import { Category, ReelQueryFilters } from '../../types/index.js';
 
 interface FilterBarProps {
@@ -8,13 +8,17 @@ interface FilterBarProps {
   categories: Category[];
   availableTags?: { name: string; count?: number }[];
   totalResults: number;
+  isEmbedMode?: boolean;
+  onToggleEmbedMode?: () => void;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   onChangeFilters,
   categories,
-  totalResults
+  totalResults,
+  isEmbedMode = false,
+  onToggleEmbedMode
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -164,6 +168,26 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <option value="alphabetical">Title: A to Z</option>
           </select>
         </div>
+
+        {/* View Mode Toggle: Cards vs Live Video Frames */}
+        {onToggleEmbedMode && (
+          <button
+            type="button"
+            onClick={onToggleEmbedMode}
+            className={`btn ${isEmbedMode ? 'btn-primary' : 'btn-secondary'}`}
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              padding: 'var(--space-2) var(--space-3)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-1)'
+            }}
+            title={isEmbedMode ? 'Switch to Compact Card View' : 'Switch to Live Video Frame Embeds'}
+          >
+            {isEmbedMode ? <LayoutGrid size={13} /> : <Film size={13} />}
+            <span>{isEmbedMode ? 'Card View' : 'Live Frames'}</span>
+          </button>
+        )}
       </div>
 
       {/* Active Filter Ledger & Entry Count */}
