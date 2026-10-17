@@ -13,6 +13,21 @@ interface AuthModalProps {
   onNavigateToTerms?: () => void;
 }
 
+function formatAuthErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error) {
+    const msg = err.message || '';
+    if (
+      msg.includes('is not valid JSON') ||
+      msg.includes('Unexpected token') ||
+      msg.includes('SyntaxError')
+    ) {
+      return 'Unable to connect to the server. Please verify your connection or try again.';
+    }
+    return msg || fallback;
+  }
+  return fallback;
+}
+
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onSuccess,
@@ -84,8 +99,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         });
       }
     } catch (err: unknown) {
-      const e = err as Error;
-      setErrorMsg(e.message || 'Authentication failed. Please verify credentials.');
+      setErrorMsg(formatAuthErrorMessage(err, 'Authentication failed. Please verify credentials.'));
     } finally {
       setIsLoading(false);
     }
@@ -116,8 +130,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         updatedAt: new Date().toISOString()
       });
     } catch (err: unknown) {
-      const e = err as Error;
-      setErrorMsg(e.message || 'Failed demo authentication');
+      setErrorMsg(formatAuthErrorMessage(err, 'Failed demo authentication. Please try again.'));
     } finally {
       setIsLoading(false);
     }

@@ -47,35 +47,51 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   let data: any = null;
   const contentType = response.headers.get('content-type') || '';
+
   if (contentType.includes('application/json')) {
     try {
       data = await response.json();
     } catch {
       data = null;
     }
-  } else {
+  }
+
+  // If response was not valid JSON or response.json() threw a SyntaxError
+  if (!data) {
     try {
       const rawText = await response.text();
+      const isHtml = Boolean(rawText && (rawText.trim().startsWith('<') || rawText.includes('<html')));
+      const isServerCrash = Boolean(rawText && rawText.toLowerCase().includes('server error'));
+
+      let displayMessage: string;
+      if (response.status === 405) {
+        displayMessage = 'Method not allowed (HTTP 405). The server configuration is routing requests incorrectly.';
+      } else if (response.status === 404) {
+        displayMessage = 'Requested service endpoint not found (HTTP 404).';
+      } else if (response.status === 500 || isServerCrash) {
+        displayMessage = 'A temporary server error occurred. Please try again.';
+      } else if (isHtml || !rawText) {
+        displayMessage = `Server returned HTTP ${response.status}. Please try again.`;
+      } else {
+        displayMessage = rawText.length < 200 ? rawText.trim() : `Server error (HTTP ${response.status}).`;
+      }
+
       data = {
         success: false,
         error: {
           code: `HTTP_${response.status}`,
-          message: rawText && rawText.length < 300 ? rawText.trim() : `Server error (HTTP ${response.status}).`
+          message: displayMessage
         }
       };
     } catch {
-      data = null;
+      data = {
+        success: false,
+        error: {
+          code: `HTTP_${response.status}`,
+          message: `Unexpected server response (HTTP ${response.status}). Please try again.`
+        }
+      };
     }
-  }
-
-  if (!data) {
-    data = {
-      success: false,
-      error: {
-        code: `HTTP_${response.status}`,
-        message: `Unexpected server response (HTTP ${response.status}). Please try again.`
-      }
-    };
   }
 
   if (!response.ok || !data.success) {

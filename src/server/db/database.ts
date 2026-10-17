@@ -14,9 +14,19 @@ export function initDatabase(config: DatabaseConfig = {}): DatabaseSync {
     return dbInstance;
   }
 
-  const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
-  const defaultPath = isVercel ? '/tmp/reelvault.sqlite' : './data/reelvault.sqlite';
-  const dbPath = config.dbPath || process.env.DATABASE_PATH || defaultPath;
+  const isVercel = Boolean(
+    process.env.VERCEL ||
+    process.env.VERCEL_ENV ||
+    process.env.VERCEL_URL ||
+    process.env.NOW_REGION
+  );
+
+  let dbPath = config.dbPath || process.env.DATABASE_PATH;
+  if (isVercel) {
+    dbPath = (dbPath === ':memory:') ? ':memory:' : '/tmp/reelvault.sqlite';
+  } else if (!dbPath) {
+    dbPath = './data/reelvault.sqlite';
+  }
 
   if (dbPath !== ':memory:') {
     const dir = path.dirname(dbPath);
@@ -29,7 +39,14 @@ export function initDatabase(config: DatabaseConfig = {}): DatabaseSync {
     }
   }
 
-  const db = new DatabaseSync(dbPath);
+  let db: DatabaseSync;
+  try {
+    db = new DatabaseSync(dbPath);
+  } catch (err) {
+    console.warn(`[ReelVault DB] Failed to initialize SQLite at '${dbPath}', falling back to ':memory:':`, err);
+    db = new DatabaseSync(':memory:');
+    dbPath = ':memory:';
+  }
 
   // Configure SQLite for high performance and integrity
   try {

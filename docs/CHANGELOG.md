@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.2] - 2026-10-17
+
+### Fixed
+- **Vercel Serverless Rewrite Routing & Schema Compliance**:
+  - Corrected `vercel.json` rewrites to map `/api/(.*)` to `/api/index?__rv_path=$1`, eliminating HTTP 405 Method Not Allowed caused by requests falling through to static `index.html`.
+  - Removed unsupported `runtime: "nodejs22.x"` from `vercel.json` functions block to adhere to Vercel schema specifications and prevent deployment build failures (relying on `package.json` `engines.node` specification).
+  - Robust URL path reconstruction in `api/index.ts` to safely extract sub-path parameters and reverse-proxy forwarded URIs, preventing route loss.
+  - Hardened database initialization in `src/server/db/database.ts` with unconditional `/tmp/reelvault.sqlite` targeting in serverless runtimes and a graceful `:memory:` fallback.
+  - Sanitized API response parsing and modal error displays in `src/client/services/api.ts` and `src/client/components/modals/AuthModal.tsx` to prevent technical JSON syntax errors from leaking to users.
+
 ## [1.1.1] - 2026-10-15
 
 ### Fixed

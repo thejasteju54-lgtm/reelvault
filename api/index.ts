@@ -22,19 +22,35 @@ export default function handler(req: IncomingMessage, res: ServerResponse) {
   try {
     const app = getApp();
 
-    // Preserve full original path when routed through Vercel rewrites
-    const matchedPath =
-      (req.headers['x-matched-path'] as string) ||
-      (req.headers['x-vercel-matched-path'] as string) ||
-      (req.headers['x-forwarded-uri'] as string);
-
+    // Reconstruct full original path when routed through Vercel rewrites
     let currentUrl = req.url || '/api';
-    if (matchedPath && matchedPath.startsWith('/api')) {
-      const qIdx = currentUrl.indexOf('?');
-      const queryString = qIdx !== -1 ? currentUrl.substring(qIdx) : '';
-      req.url = matchedPath.includes('?') ? matchedPath : matchedPath + queryString;
-    } else if (!currentUrl.startsWith('/api')) {
-      req.url = '/api' + (currentUrl.startsWith('/') ? currentUrl : '/' + currentUrl);
+
+    if (currentUrl.includes('__rv_path=')) {
+      try {
+        const dummyBase = 'http://localhost';
+        const parsedUrl = new URL(currentUrl, dummyBase);
+        const rvPath = parsedUrl.searchParams.get('__rv_path') || '';
+        parsedUrl.searchParams.delete('__rv_path');
+        const remainingQuery = parsedUrl.searchParams.toString();
+        const cleanSubPath = rvPath.startsWith('/') ? rvPath : `/${rvPath}`;
+        req.url = `/api${cleanSubPath}${remainingQuery ? `?${remainingQuery}` : ''}`;
+      } catch {
+        // Fallback to currentUrl if URL parsing fails
+      }
+    } else {
+      const forwardedUri =
+        (req.headers['x-forwarded-uri'] as string) ||
+        (req.headers['x-vercel-forwarded-for-url'] as string);
+
+      if (forwardedUri && forwardedUri.startsWith('/api') && !forwardedUri.startsWith('/api/index')) {
+        req.url = forwardedUri;
+      } else if (!req.url || req.url === '/api/index' || req.url.startsWith('/api/index?')) {
+        const qIdx = currentUrl.indexOf('?');
+        const queryString = qIdx !== -1 ? currentUrl.substring(qIdx) : '';
+        req.url = `/api${queryString}`;
+      } else if (!currentUrl.startsWith('/api')) {
+        req.url = '/api' + (currentUrl.startsWith('/') ? currentUrl : '/' + currentUrl);
+      }
     }
 
     return (app as unknown as (req: IncomingMessage, res: ServerResponse) => void)(req, res);

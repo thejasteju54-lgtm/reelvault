@@ -3,11 +3,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/client",
   "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs22.x"
-    },
     "api/index.ts": {
-      "runtime": "nodejs22.x"
+      "memory": 1024,
+      "maxDuration": 15
     }
   },
   "headers": [
@@ -43,8 +41,12 @@
   ],
   "rewrites": [
     {
+      "source": "/api",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "/api/index?__rv_path=$1"
     },
     {
       "source": "/(.*)",

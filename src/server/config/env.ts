@@ -15,7 +15,12 @@ const EnvSchema = z.object({
 export type EnvConfig = z.infer<typeof EnvSchema>;
 
 export function validateEnv(): EnvConfig {
-  const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+  const isVercel = Boolean(
+    process.env.VERCEL ||
+    process.env.VERCEL_ENV ||
+    process.env.VERCEL_URL ||
+    process.env.NOW_REGION
+  );
 
   // If running in Vercel serverless without an explicit custom JWT_SECRET,
   // supply a safe, stable 32-character production key so serverless cold boots do not fail.
