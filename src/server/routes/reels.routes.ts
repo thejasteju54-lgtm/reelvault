@@ -10,12 +10,59 @@ import {
   toggleFavorite,
   toggleWatched,
   toggleArchive,
-  deleteReel
+  deleteReel,
+  syncReels
 } from '../services/reels.service.js';
 
 const router = Router();
 
-// 100% of reel routes require authentication
+// Public thumbnail proxy for Instagram reels to avoid CORS, hotlink, and referrer blockage
+router.get('/thumbnail/:shortcode', async (req, res) => {
+  const shortcode = req.params.shortcode;
+  if (!shortcode || !/^[A-Za-z0-9_-]{3,40}$/.test(shortcode)) {
+    res.status(400).json({ error: 'Invalid shortcode' });
+    return;
+  }
+
+  try {
+    const igUrl = `https://www.instagram.com/p/${shortcode}/media/?size=l`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    const igResponse = await fetch(igUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        'Referer': ''
+      },
+      signal: controller.signal,
+      redirect: 'follow'
+    });
+    clearTimeout(timeout);
+
+    if (!igResponse.ok) {
+      res.status(igResponse.status).json({ error: 'Thumbnail not available' });
+      return;
+    }
+
+    const contentType = igResponse.headers.get('content-type') || 'image/jpeg';
+    if (!contentType.startsWith('image/')) {
+      res.status(404).json({ error: 'Thumbnail returned non-image content' });
+      return;
+    }
+
+    const arrayBuffer = await igResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+    res.send(buffer);
+  } catch (err) {
+    res.status(502).json({ error: 'Failed to retrieve reel thumbnail' });
+  }
+});
+
+// All remaining reel routes require authentication
 router.use(requireAuth);
 
 const CreateReelSchema = z.object({
@@ -55,6 +102,42 @@ router.post('/', validateBody(CreateReelSchema), (req: AuthenticatedRequest, res
     res.status(201).json({
       success: true,
       data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+const SyncReelsSchema = z.object({
+  reels: z.array(z.object({
+    id: z.string().optional(),
+    url: z.string().optional(),
+    instagramUrl: z.string().optional(),
+    canonicalUrl: z.string().optional(),
+    instagramShortcode: z.string().min(1),
+    title: z.string().nullable().optional(),
+    creatorUsername: z.string().nullable().optional(),
+    thumbnailUrl: z.string().nullable().optional(),
+    notes: z.string().nullable().optional(),
+    categoryId: z.string().nullable().optional(),
+    tags: z.array(z.string()).optional(),
+    isFavorite: z.boolean().optional(),
+    isWatched: z.boolean().optional(),
+    isArchived: z.boolean().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+    watchedAt: z.string().nullable().optional(),
+    archivedAt: z.string().nullable().optional()
+  })).max(500)
+});
+
+// Sync Reels (Hydrate cache to SQLite)
+router.post('/sync', validateBody(SyncReelsSchema), (req: AuthenticatedRequest, res: Response, next) => {
+  try {
+    const synced = syncReels(req.user!.userId, req.body.reels);
+    res.status(200).json({
+      success: true,
+      data: synced
     });
   } catch (err) {
     next(err);

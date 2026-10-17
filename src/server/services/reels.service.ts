@@ -112,10 +112,12 @@ export function saveReel(userId: string, input: CreateReelInput): Reel {
 
   const reelId = generateUuid();
   const cleanTags = normalizeTags(input.tags);
-  const cleanTitle = input.title?.trim() || null;
+  const cleanTitle = input.title?.trim() || `Reel (${parsed.shortcode})`;
   const cleanNotes = input.notes?.trim() || null;
   const categoryId = input.categoryId?.trim() || null;
-  const cleanThumbnailUrl = input.thumbnailUrl !== undefined ? (input.thumbnailUrl?.trim() || null) : null;
+  const cleanThumbnailUrl = (input.thumbnailUrl && input.thumbnailUrl.trim().length > 0)
+    ? input.thumbnailUrl.trim()
+    : `https://www.instagram.com/p/${parsed.shortcode}/media/?size=l`;
 
   return runTransaction((txDb) => {
     try {
@@ -518,4 +520,72 @@ export function exportVaultData(userId: string, format: 'json' | 'csv' = 'json')
   }
 
   return JSON.stringify(items, null, 2);
+}
+
+export function syncReels(userId: string, incomingReels: Partial<Reel>[]): Reel[] {
+  if (!Array.isArray(incomingReels) || incomingReels.length === 0) {
+    return getReels(userId, { limit: 100 }).reels;
+  }
+
+  const db = getDb();
+  runTransaction((txDb) => {
+    const insertStmt = txDb.prepare(`
+      INSERT OR REPLACE INTO reels (
+        id, user_id, instagram_url, canonical_url, instagram_shortcode,
+        title, creator_username, thumbnail_url, notes, category_id,
+        is_favorite, is_watched, is_archived, created_at, updated_at,
+        watched_at, archived_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const findTagStmt = txDb.prepare('SELECT id FROM tags WHERE user_id = ? AND name = ?');
+    const insertTagStmt = txDb.prepare('INSERT OR IGNORE INTO tags (id, user_id, name) VALUES (?, ?, ?)');
+    const linkStmt = txDb.prepare('INSERT OR IGNORE INTO reel_tags (reel_id, tag_id) VALUES (?, ?)');
+
+    for (const reel of incomingReels) {
+      const shortcode = reel.instagramShortcode || (reel.instagramUrl ? parseInstagramUrl(reel.instagramUrl).shortcode : null);
+      if (!shortcode) continue;
+
+      const reelId = reel.id || generateUuid();
+      const rawUrl = reel.instagramUrl || `https://www.instagram.com/reel/${shortcode}/`;
+      const canonicalUrl = reel.canonicalUrl || `https://www.instagram.com/reel/${shortcode}/`;
+      const title = reel.title || `Reel (${shortcode})`;
+      const thumbnail = reel.thumbnailUrl || `https://www.instagram.com/p/${shortcode}/media/?size=l`;
+      const createdAt = reel.createdAt || new Date().toISOString();
+      const updatedAt = reel.updatedAt || createdAt;
+
+      insertStmt.run(
+        reelId,
+        userId,
+        rawUrl,
+        canonicalUrl,
+        shortcode,
+        title,
+        reel.creatorUsername || null,
+        thumbnail,
+        reel.notes || null,
+        reel.categoryId || null,
+        reel.isFavorite ? 1 : 0,
+        reel.isWatched ? 1 : 0,
+        reel.isArchived ? 1 : 0,
+        createdAt,
+        updatedAt,
+        reel.watchedAt || null,
+        reel.archivedAt || null
+      );
+
+      if (Array.isArray(reel.tags) && reel.tags.length > 0) {
+        const cleanTags = normalizeTags(reel.tags);
+        for (const tag of cleanTags) {
+          insertTagStmt.run(generateUuid(), userId, tag);
+          const tagRow = findTagStmt.get(userId, tag) as { id: string } | undefined;
+          if (tagRow) {
+            linkStmt.run(reelId, tagRow.id);
+          }
+        }
+      }
+    }
+  });
+
+  return getReels(userId, { limit: 100 }).reels;
 }

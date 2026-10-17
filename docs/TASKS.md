@@ -53,6 +53,7 @@ This document maps all deliverables to verifiable tasks. When tasks finish, agen
 | **M3-09** | Release Checklist | `docs/RELEASE_CHECKLIST.md` & `docs/CHANGELOG.md` | Pre-flight release verification guide and version changelog | M3-07 | `[done]` |
 | **M3-10** | Cover Images & Video Frames | Visual card covers and live Instagram embed players | Custom thumbnail URL, live frame toggle, card view mode | M1-09, M1-10 | `[done]` |
 | **M3-11** | Vercel Serverless Hardening | Serverless routing, runtime & parser fix | Rewrite query mapping, schema compliance, /tmp db fallback, sanitized error banner | M3-01 | `[done]` |
+| **M3-12** | Dual-Layer Persistence & Media Resolution | Offline-first client cache, serverless hydration & thumbnail proxy | Eliminates ephemeral state loss across serverless instances; auto-populates Instagram images with embed fallback; streamlined single-action save bar | M3-11 | `[done]` |
 
 ---
 

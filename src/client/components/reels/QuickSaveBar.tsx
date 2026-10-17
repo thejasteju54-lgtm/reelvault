@@ -144,6 +144,16 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
         position: 'relative'
       }}
     >
+      <div style={{ marginBottom: 'var(--space-3)' }}>
+        <h2 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <BookmarkPlus size={18} color="var(--color-primary)" />
+          <span>Save Instagram Reel</span>
+        </h2>
+        <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+          Paste any Instagram Reel link to save it permanently with automatic cover image resolution.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         {/* Anti-bot honeypot field */}
         <input
@@ -169,7 +179,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
                 setUrlError(null);
                 setDuplicateReelId(null);
               }}
-              placeholder="Paste Instagram Reel URL (Press 'N' to focus)"
+              placeholder="Paste Instagram Reel URL here (e.g. https://www.instagram.com/reel/...)"
               style={{
                 width: '100%',
                 padding: 'var(--space-3) 2.5rem var(--space-3) var(--space-3)',
@@ -201,10 +211,10 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
             type="submit"
             disabled={isSubmitting || !url.trim()}
             className="btn btn-primary"
-            style={{ padding: 'var(--space-3) var(--space-4)', minWidth: '124px' }}
+            style={{ padding: 'var(--space-3) var(--space-4)', minWidth: '130px', fontWeight: 600 }}
           >
             <BookmarkPlus size={16} />
-            <span>{isSubmitting ? 'Cataloging...' : 'Save Reel'}</span>
+            <span>{isSubmitting ? 'Saving...' : 'Save Reel'}</span>
           </button>
         </div>
 
@@ -231,7 +241,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <AlertCircle size={15} color="var(--color-primary)" />
-              <span>This Reel is already cataloged in your vault.</span>
+              <span>This Reel is already saved in your vault.</span>
             </div>
             <button
               type="button"
@@ -266,7 +276,7 @@ export const QuickSaveBar: React.FC<QuickSaveBarProps> = ({
               padding: 'var(--space-1) var(--space-2)'
             }}
           >
-            <span>{isExpanded ? 'Hide archive fields' : 'Add metadata (title, category, tags, cover image, notes)'}</span>
+            <span>{isExpanded ? 'Hide optional fields' : '+ Add optional title, tags, category or notes'}</span>
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </div>

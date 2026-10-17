@@ -16,6 +16,7 @@ import {
   ReelQueryFilters
 } from '../types/index.js';
 import { api, getStoredToken } from './services/api.js';
+import { vaultStorage } from './services/vaultStorage.js';
 import { analytics } from './services/analytics.js';
 import { Header } from './components/layout/Header.js';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar.js';
@@ -62,12 +63,12 @@ export const App: React.FC = () => {
     return 'dashboard';
   });
 
-  // Vault data state
-  const [reels, setReels] = useState<Reel[]>([]);
+  // Vault data state with offline-first client storage
+  const [reels, setReels] = useState<Reel[]>(() => vaultStorage.loadReels());
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [stats, setStats] = useState<VaultStats | null>(null);
-  const [totalReelsCount, setTotalReelsCount] = useState(0);
+  const [totalReelsCount, setTotalReelsCount] = useState(() => vaultStorage.loadReels().length);
   const [isLoadingReels, setIsLoadingReels] = useState(false);
   const [isEmbedMode, setIsEmbedMode] = useState(false);
 
@@ -183,6 +184,17 @@ export const App: React.FC = () => {
     }
   }, [currentUser]);
 
+  // Hydrate local cache on user sign in
+  useEffect(() => {
+    if (currentUser) {
+      const cached = vaultStorage.loadReels(currentUser.id);
+      if (cached.length > 0) {
+        setReels(cached);
+        setTotalReelsCount(cached.length);
+      }
+    }
+  }, [currentUser]);
+
   // Load reels with current filters
   const loadReels = useCallback(async () => {
     if (!currentUser) return;
@@ -206,10 +218,38 @@ export const App: React.FC = () => {
       }
 
       const res = await api.reels.list(queryParams);
-      setReels(res.reels);
-      setTotalReelsCount(res.total);
+      const cached = vaultStorage.loadReels(currentUser.id);
+      const isFiltering = Boolean(
+        filters.q ||
+        filters.tag ||
+        filters.categoryId ||
+        (filters.status && filters.status !== 'all') ||
+        currentTab !== 'dashboard'
+      );
+
+      let displayReels: Reel[];
+      if (!isFiltering) {
+        displayReels = vaultStorage.mergeReels(cached, res.reels);
+        vaultStorage.saveReels(currentUser.id, displayReels);
+
+        // If local cache has reels missing from this serverless instance, sync them back
+        if (displayReels.length > res.reels.length) {
+          api.reels.sync(displayReels).catch((err) => console.warn('[Sync] Serverless hydration:', err));
+        }
+      } else {
+        displayReels = res.reels;
+      }
+
+      setReels(displayReels);
+      setTotalReelsCount(isFiltering ? res.total : displayReels.length);
     } catch {
-      showToast('Failed to load reels. Please refresh.', 'error');
+      const cached = vaultStorage.loadReels(currentUser?.id);
+      if (cached.length > 0) {
+        setReels(cached);
+        setTotalReelsCount(cached.length);
+      } else {
+        showToast('Failed to load reels. Please refresh.', 'error');
+      }
     } finally {
       setIsLoadingReels(false);
     }
@@ -222,18 +262,43 @@ export const App: React.FC = () => {
     }
   }, [currentUser, currentTab, filters, loadReels, refreshMetadata]);
 
-  // Handle Quick Save
+  // Handle Quick Save with immediate local persistence and background server sync
   const handleQuickSave = async (payload: {
     url: string;
     title?: string;
     notes?: string;
     categoryId?: string;
     tags?: string[];
+    thumbnailUrl?: string;
     website?: string;
   }) => {
-    const saved = await api.reels.save(payload);
-    analytics.trackEvent('reel_saved', { hasTags: Boolean(payload.tags && payload.tags.length > 0) });
-    await Promise.all([loadReels(), refreshMetadata()]);
+    let saved: Reel | null = null;
+    try {
+      saved = await api.reels.save(payload);
+    } catch (err: unknown) {
+      const apiErr = err as Error & { code?: string; existingReelId?: string };
+      if (apiErr.code === 'DUPLICATE_REEL') {
+        showToast('This Reel is already saved in your vault.', 'info');
+        if (apiErr.existingReelId) {
+          handleSelectReelById(apiErr.existingReelId);
+        }
+        return null as unknown as Reel;
+      }
+      throw err;
+    }
+
+    if (saved) {
+      // Instantly update local cache and state so reel never disappears
+      const updated = vaultStorage.addOrUpdateReel(currentUser?.id, saved);
+      setReels(updated);
+      setTotalReelsCount(updated.length);
+
+      analytics.trackEvent('reel_saved', { hasTags: Boolean(payload.tags && payload.tags.length > 0) });
+
+      // Background sync to ensure all serverless instances have the full list
+      api.reels.sync(updated).catch(() => {});
+      refreshMetadata().catch(() => {});
+    }
     return saved;
   };
 
@@ -245,11 +310,15 @@ export const App: React.FC = () => {
   };
 
   const handleToggleFavorite = async (reelId: string) => {
-    setReels((prev) =>
-      prev.map((r) => (r.id === reelId ? { ...r, isFavorite: !r.isFavorite } : r))
-    );
+    const currentReel = reels.find((r) => r.id === reelId);
+    const newFavorite = currentReel ? !currentReel.isFavorite : true;
+    const updatedList = reels.map((r) => (r.id === reelId ? { ...r, isFavorite: newFavorite } : r));
+    setReels(updatedList);
+    vaultStorage.saveReels(currentUser?.id, updatedList);
+
     try {
-      await api.reels.toggleFavorite(reelId);
+      const updated = await api.reels.toggleFavorite(reelId);
+      vaultStorage.addOrUpdateReel(currentUser?.id, updated);
       refreshMetadata();
     } catch {
       showToast('Failed to update favorite', 'error');
@@ -258,11 +327,15 @@ export const App: React.FC = () => {
   };
 
   const handleToggleWatched = async (reelId: string) => {
-    setReels((prev) =>
-      prev.map((r) => (r.id === reelId ? { ...r, isWatched: !r.isWatched } : r))
-    );
+    const currentReel = reels.find((r) => r.id === reelId);
+    const newWatched = currentReel ? !currentReel.isWatched : true;
+    const updatedList = reels.map((r) => (r.id === reelId ? { ...r, isWatched: newWatched } : r));
+    setReels(updatedList);
+    vaultStorage.saveReels(currentUser?.id, updatedList);
+
     try {
-      await api.reels.toggleWatched(reelId);
+      const updated = await api.reels.toggleWatched(reelId);
+      vaultStorage.addOrUpdateReel(currentUser?.id, updated);
       refreshMetadata();
     } catch {
       showToast('Failed to update watched status', 'error');
@@ -272,7 +345,8 @@ export const App: React.FC = () => {
 
   const handleToggleArchive = async (reelId: string) => {
     try {
-      await api.reels.toggleArchive(reelId);
+      const updated = await api.reels.toggleArchive(reelId);
+      vaultStorage.addOrUpdateReel(currentUser?.id, updated);
       showToast('Reel archive status updated', 'success');
       loadReels();
       refreshMetadata();
@@ -285,10 +359,10 @@ export const App: React.FC = () => {
     reelId: string,
     updates: { title?: string; notes?: string; categoryId?: string | null; tags?: string[]; thumbnailUrl?: string | null }
   ) => {
-    await api.reels.update(reelId, updates);
+    const updated = await api.reels.update(reelId, updates);
+    vaultStorage.addOrUpdateReel(currentUser?.id, updated);
     await Promise.all([loadReels(), refreshMetadata()]);
     if (selectedReel?.id === reelId) {
-      const updated = await api.reels.get(reelId);
       setSelectedReel(updated);
     }
   };
@@ -297,13 +371,16 @@ export const App: React.FC = () => {
     if (!deletingReelId) return;
     try {
       await api.reels.delete(deletingReelId);
+      const remaining = vaultStorage.removeReel(currentUser?.id, deletingReelId);
+      setReels(remaining);
+      setTotalReelsCount(remaining.length);
+
       showToast('Reel deleted from vault', 'success');
       setDeletingReelId(null);
       if (selectedReel?.id === deletingReelId) {
         setIsDetailModalOpen(false);
         setSelectedReel(null);
       }
-      loadReels();
       refreshMetadata();
     } catch {
       showToast('Failed to delete Reel', 'error');
@@ -486,16 +563,27 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {/* Filter Bar with search, category, sort */}
-            <FilterBar
-              filters={filters}
-              onChangeFilters={handleFilterChange}
-              categories={categories}
-              availableTags={availableTags}
-              totalResults={totalReelsCount}
-              isEmbedMode={isEmbedMode}
-              onToggleEmbedMode={() => setIsEmbedMode((prev) => !prev)}
-            />
+            {/* Saved Reels Section Header */}
+            {reels.length > 0 && (
+              <div style={{ marginTop: 'var(--space-5)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Your Saved Reels ({totalReelsCount})
+                </h3>
+              </div>
+            )}
+
+            {/* Filter Bar with search, category, sort - shown when vault has records or filters active */}
+            {(reels.length > 0 || filters.q || filters.tag || filters.categoryId || (filters.status && filters.status !== 'all')) && (
+              <FilterBar
+                filters={filters}
+                onChangeFilters={handleFilterChange}
+                categories={categories}
+                availableTags={availableTags}
+                totalResults={totalReelsCount}
+                isEmbedMode={isEmbedMode}
+                onToggleEmbedMode={() => setIsEmbedMode((prev) => !prev)}
+              />
+            )}
 
             {/* Reels Content Grid */}
             {isLoadingReels ? (

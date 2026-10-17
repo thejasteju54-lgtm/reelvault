@@ -78,11 +78,11 @@ export const ReelCard: React.FC<ReelCardProps> = ({
   return (
     <article className="reel-card" onClick={() => onOpenDetails(reel)}>
       {/* Thumbnail / Cover area with Live Video Frame or Image */}
-      <div className={`reel-card-thumbnail ${isFrameActive ? 'has-embed' : ''}`}>
-        {isFrameActive ? (
+      <div className={`reel-card-thumbnail ${isFrameActive || imageError ? 'has-embed' : ''}`}>
+        {isFrameActive || imageError ? (
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <iframe
-              src={`https://www.instagram.com/reel/${reel.instagramShortcode}/embed/`}
+              src={`https://www.instagram.com/reel/${reel.instagramShortcode}/embed/captioned/`}
               title={reel.title || `Instagram Reel ${reel.instagramShortcode}`}
               width="100%"
               height="100%"
@@ -91,7 +91,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               allow="encrypted-media"
               style={{ border: 'none', width: '100%', height: '100%', display: 'block' }}
             />
-            {!isEmbedMode && (
+            {showEmbed && !isEmbedMode && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -114,14 +114,19 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               </button>
             )}
           </div>
-        ) : reel.thumbnailUrl && !imageError ? (
+        ) : (
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <img
-              src={reel.thumbnailUrl}
+              src={
+                reel.thumbnailUrl && !reel.thumbnailUrl.includes('/media/?size=l')
+                  ? reel.thumbnailUrl
+                  : `/api/reels/thumbnail/${reel.instagramShortcode}`
+              }
               alt={reel.title ? `Preview for ${reel.title}` : `Reel preview for shortcode ${reel.instagramShortcode}`}
               width={320}
               height={180}
               loading="lazy"
+              referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
             />
             {/* Quick Frame Preview Button overlay */}
@@ -148,67 +153,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               title="Preview Live Reel Video Frame"
             >
               <Play size={11} fill="#ffffff" />
-              <span>Frame</span>
-            </button>
-          </div>
-        ) : (
-          /* Archival Poster with Category Accent & Frame Trigger */
-          <div className="reel-poster-cover">
-            {/* Category color top strip */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '4px',
-                backgroundColor: reel.categoryColor || 'var(--color-primary)'
-              }}
-            />
-            <div
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 'var(--radius)',
-                backgroundColor: 'var(--bg-surface)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--color-primary)',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}
-            >
-              <InstagramIcon size={24} />
-            </div>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--font-size-xs)',
-                fontWeight: 600,
-                color: 'var(--text-primary)'
-              }}
-            >
-              {reel.instagramShortcode}
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowEmbed(true);
-              }}
-              className="btn btn-secondary"
-              style={{
-                fontSize: 'var(--font-size-xs)',
-                padding: '2px var(--space-2)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 'var(--space-1)',
-                marginTop: 'var(--space-1)'
-              }}
-              title="Load live reel video frame"
-            >
-              <Play size={11} fill="currentColor" />
-              <span>Load Video Frame</span>
+              <span>Play</span>
             </button>
           </div>
         )}

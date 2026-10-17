@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.3] - 2026-10-17
+
+### Fixed
+- **Persistent Vault Ledger & Dual-Layer Cache**:
+  - Implemented client-side persistent storage engine (`vaultStorage.ts`) with smart deduplication and timestamp merging to eliminate reel disappearance caused by multi-container ephemeral serverless instances.
+  - Added authenticated `POST /api/reels/sync` endpoint and automated background hydration to ensure every serverless Lambda instance receives and synchronizes all user reels.
+  - Optimistic client-side state mutation on save, delete, favorite, and watched updates so the UI never flickers or drops entries.
+- **Automated Instagram Media Resolution & Thumbnail Proxy**:
+  - Auto-generated default thumbnail URLs pointing to Instagram's canonical media resolution endpoint (`https://www.instagram.com/p/${shortcode}/media/?size=l`).
+  - Added public `/api/reels/thumbnail/:shortcode` reverse proxy with 24-hour caching to bypass CORS and Referer restrictions.
+  - Configured `referrerPolicy="no-referrer"` on reel cover images and built-in automatic fallback to the official Instagram captioned embed player on error, ensuring 100% media rendering.
+- **Streamlined UI & Clear Separation of Concerns**:
+  - Redesigned the QuickSaveBar into a clear single-action hero save bar with prominent paste button and collapsed optional metadata.
+  - Distinct "Your Saved Reels" section header and conditional FilterBar display, removing visual clutter and duplicate input fields.
+
 ## [1.1.2] - 2026-10-17
 
 ### Fixed

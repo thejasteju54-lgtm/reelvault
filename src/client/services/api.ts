@@ -217,6 +217,14 @@ export const api = {
       await request(`/api/reels/${id}`, {
         method: 'DELETE'
       });
+    },
+
+    async sync(reels: Reel[]): Promise<Reel[]> {
+      const res = await request<{ data: Reel[] }>('/api/reels/sync', {
+        method: 'POST',
+        body: JSON.stringify({ reels })
+      });
+      return res.data;
     }
   },
 
